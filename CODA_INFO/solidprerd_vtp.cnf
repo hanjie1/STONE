@@ -1,1 +1,120 @@
-/diskless/CentOS7/x86_64/home/daq/params/vtp/solidprerd.cnf
+VTP_CRATE all
+
+#VTP_FIRMWARE fe_vtp_halla_v7_compton.bin
+
+VTP_REFCLK  250
+
+VTP_W_OFFSET 4000
+VTP_W_WIDTH 4000
+
+
+#        slot: 10 13  9 14  8 15  7 16  6 17  5 18  4 19  3 20
+#     payload:  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+VTP_PAYLOAD_EN  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0
+
+#      fiber:  1  2  3  4
+VTP_FIBER_EN   0  0  0  0
+
+#Compton trigger configuration syntax
+#
+#                            |--Trigger bit number 0 to 4
+#                            |
+#                            |  
+#Prescale range 0(disabled), to 65535
+#VTP_COMPTON_PRESCALE        0   1
+#
+#Units: ns, range 0 to 1020ns
+#VTP_COMPTON_DELAY           0   0
+#
+#Units: FADC Integral Counts * FADC GAIN (pedestal subtracted). Range 0 to 8191
+#VTP_COMPTON_FADC_THRESHOLD  0   0
+#
+# Electron plane multiplicity minimun: range 0 to 4
+#VTP_COMPTON_EPLANE_MULT_MIN 0   2
+#
+# Electron plane enable(=1):    0 1 2 3 
+#VTP_COMPTON_EPLANE_MASK     0  1 1 1 1
+#
+#
+#
+#                               |--FADC Channel number 0 to 15
+#                               |
+#                               |  
+#VTP_COMPTON_FADC_EN_MASK	0   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+#
+# Note: electron/vetroc only trigger is early by ~500ns compared to photon
+#       -> whenever the photon trigger (either by itself or in coincidece with
+#          the electron) the trigger bit needs 0 delay
+#       -> when electron is used by itself the trigger bit needs a ~500ns
+#          delay so that VETROC/FADC hits are roughly in the same place of 
+#          the readout window.
+
+###################
+## Trigger Bit 0 ##
+###################
+VTP_COMPTON_PRESCALE        0   0
+VTP_COMPTON_DELAY           0   440
+VTP_COMPTON_FADC_THRESHOLD  0   0
+VTP_COMPTON_FADC_EN_MASK	0   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+VTP_COMPTON_EPLANE_MULT_MIN 0   2
+VTP_COMPTON_EPLANE_MASK     0   1 1 1 1
+
+###################
+## Trigger Bit 1 ##
+###################
+VTP_COMPTON_PRESCALE        1   0
+VTP_COMPTON_DELAY           1   0
+VTP_COMPTON_FADC_THRESHOLD  1   20
+VTP_COMPTON_FADC_EN_MASK	1   1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+VTP_COMPTON_EPLANE_MULT_MIN 1   2
+VTP_COMPTON_EPLANE_MASK     1   1 1 0 0
+
+###################
+## Trigger Bit 2 ##
+###################
+VTP_COMPTON_PRESCALE        2   1
+VTP_COMPTON_DELAY           2   0
+VTP_COMPTON_FADC_THRESHOLD  2   5
+VTP_COMPTON_FADC_EN_MASK    2   1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+VTP_COMPTON_EPLANE_MULT_MIN 2   0
+VTP_COMPTON_EPLANE_MASK     2   0 0 0 0
+
+###################
+## Trigger Bit 3 ##
+###################
+VTP_COMPTON_PRESCALE        3   0
+VTP_COMPTON_DELAY           3   440
+VTP_COMPTON_FADC_THRESHOLD  3   0
+VTP_COMPTON_FADC_EN_MASK	3   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+VTP_COMPTON_EPLANE_MULT_MIN 3   1
+VTP_COMPTON_EPLANE_MASK     3   1 1 0 0
+
+###################
+## Trigger Bit 4 ##
+###################
+VTP_COMPTON_PRESCALE        4   0
+VTP_COMPTON_DELAY           4   0
+VTP_COMPTON_FADC_THRESHOLD  4   1
+VTP_COMPTON_FADC_EN_MASK	4   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+VTP_COMPTON_EPLANE_MULT_MIN 4   0
+VTP_COMPTON_EPLANE_MASK     4   0 0 0 0
+
+
+###################
+## Common settings#
+###################
+
+#Enable live/busy time, strip, and trigger helicity based scalers in event data
+VTP_COMPTON_SCALER_READOUT_EN   1
+
+#Units: 4ns: VETROC coincidence window width
+VTP_COMPTON_VETROC_WIDTH    250 # 1us coincidence width
+
+#Trigger bit width -> TS: Units: ns
+VTP_COMPTON_WIDTH 100
+
+#Trigger latency: units ns
+VTP_COMPTON_LATENCY 1000
+
+VTP_CRATE end
+
