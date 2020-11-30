@@ -5,3 +5,5 @@
 *.txt
 *.so
 *.a
+Rootfiles/
+Rootfiles_rawmode/
