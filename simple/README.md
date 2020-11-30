@@ -1,5 +1,5 @@
 
-# SIMPLE
+# SIMPLE by Bryan Moffit
 
 This library started out as an library that "unblocked" or
 "disentanlged" events in a secondary readout list.  It's now turned
