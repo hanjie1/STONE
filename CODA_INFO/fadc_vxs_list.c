@@ -204,6 +204,7 @@ rocDownload()
       faSetTriggerBusyCondition(faSlot(ifa), 3);
 
       /* set fadc scaler */
+	
       int scaler_status = faSetScalerBlockInterval(faSlot(ifa),100);
       if(scaler_status<0) printf("faSetScalerBlockInterval failed\n");
       else printf("faSetScalerBlockInterval successfull\n");
@@ -262,7 +263,7 @@ rocPrestart()
 #ifdef FADCPLAYBACK
       faPPGEnable(faSlot(ifa));
 #endif
-
+      faEnableScalers(faSlot(ifa));
     }
 
   /* Set number of events per block (broadcasted to all connected TI Slaves)*/
@@ -321,13 +322,15 @@ rocEnd()
    tiSoftTrig(1,0,700,0);
 #endif
 
+   int ifa;
    /* disable playback */
 #ifdef FADCPLAYBACK
-   int ifa;
    for(ifa=0; ifa<nfadc; ifa++)
      faPPGDisable(faSlot(ifa));
 #endif
 
+   for(ifa=0; ifa<nfadc; ifa++)
+     faDisableScalers(faSlot(ifa));
   /* FADC Disable */
   faGDisable(0);
 
