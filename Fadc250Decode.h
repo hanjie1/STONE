@@ -39,6 +39,7 @@ struct fadc_data_struct
   unsigned int trig_state_int;  /* e.g. helicity */
   unsigned int evt_num_int;
   unsigned int err_status_int;
+  unsigned int num_scaler;  // number of scaler words
 }fadc_data;
 
 #define RAW_MODE 1
@@ -57,6 +58,7 @@ Int_t nrawdata = 0;
 unsigned int mychan = 0;
 int ftdc_nhit[16] = {0};
 unsigned int oldchan=-1;
+int nscalwrd = 0; 
 
 int GetFadcMode(){
     int mode = -1;    
@@ -352,8 +354,21 @@ void faDataDecode(unsigned int data)
            fadc_data.err_status_int);
       break;
     case 12:        /* UNDEFINED TYPE */
-      if( i_print )
-    printf("%8X - UNDEFINED TYPE = %d\n", data, fadc_data.type);
+      if(fadc_data.new_type){
+        fadc_data.num_scaler = data & 0x3F;        
+        if(fadc_data.num_scaler!= 18) 
+	  printf("FADC ERROR: the number of words for scaler %d is not 18\n",fadc_data.num_scaler);
+        if( i_print )printf("%8X - TYPE 12 first word NUM of SCALER WORDS = %d\n", data, fadc_data.num_scaler);
+ 	nscalwrd=0;	
+      }
+      else{
+	if(nscalwrd<16) fadc_scal_cnt[nscalwrd]=data;	
+	if(nscalwrd==16) fadc_scal_time = data;
+	if(nscalwrd==17) { fadc_scal_trigcnt=data; fadc_scal_update=1;}
+	if(nscalwrd>17) printf("FADC ERROR: the scaler words is bigger than 18\n");
+        if( i_print )printf("%8X - TYPE 12 %d word = %d\n", data, nscalwrd, data);
+	nscalwrd++;
+      }
       break;
     case 13:        /* END OF EVENT */
       if( i_print )

@@ -65,6 +65,10 @@ int main ()
   T->Branch("fadc_a1", fadc_int_1, Form("fadc_int_1[%i]/I",FADC_NCHAN)); 
   T->Branch("fadc_t1", fadc_time_1, Form("fadc_time_1[%i]/I",FADC_NCHAN)); 
   T->Branch("fadc_nhit", fadc_nhit, Form("fadc_nhit[%i]/I",FADC_NCHAN)); 
+  T->Branch("fadc_scal_cnt", fadc_scal_cnt, "fadc_scal_cnt[16]/I"); 
+  T->Branch("fadc_scal_rate", fadc_scal_rate, "fadc_scal_rate[16]/I"); 
+  T->Branch("fadc_scal_time", &fadc_scal_time, "fadc_scal_time/I"); 
+  T->Branch("fadc_scal_trigcnt", &fadc_scal_trigcnt, "fadc_scal_trigcnt/I"); 
 
   TTree *VTP = new TTree("VTP","vtp data");
   VTP->Branch("vtp_trigtime", &vtp_trigtime, "vtp_trigtime/l");
@@ -288,7 +292,23 @@ int main ()
 		      fadc_mode = GetFadcMode();
 	   	      if(fadc_mode == RAW_MODE)
                          T->Branch("fadc_rawADC", frawdata, Form("frawdata[%i][%i]/I",FADC_NCHAN,MAXRAW)); 
-			 }
+
+		      fadc_scal_pretime=0;
+		      for(int kk=0; kk<16; kk++) fadc_scal_precnt[kk]=0;
+		   }
+
+		   if(fadc_scal_update==1){
+		      Double_t delta_t = (fadc_scal_time-fadc_scal_pretime)*2048.0*1e-9;  // s
+		      if(delta_t<=0) printf("ERROR: FADC scaler timer is not updated\n");
+
+		      for(int kk=0; kk<16; kk++){
+			Double_t delta_cnt = 1.0*( fadc_scal_cnt[kk]-fadc_scal_precnt[kk] );
+			if(delta_t>0) fadc_scal_rate[kk]=delta_cnt/delta_t;
+
+		        fadc_scal_precnt[kk] = fadc_scal_cnt[kk];	
+		      }
+		      fadc_scal_pretime = fadc_scal_time;
+		   }
 	      }
 
             /**  VTP event data **/
@@ -386,6 +406,13 @@ void ClearTreeVar(){
  memset(frawdata, 0, FADC_NCHAN*MAXRAW*sizeof(frawdata[0][0]));	
  fadc_trigtime = 0;
  nrawdata=0;
+
+ memset(fadc_scal_cnt, 0, 16*sizeof(fadc_scal_cnt[0]));
+ fadc_scal_time=0;
+ fadc_scal_trigcnt=0;
+
+ fadc_scal_update=0;
+ memset(fadc_scal_rate, 0, 16*sizeof(fadc_scal_rate[0]));
 
  ClearVTP();  // clear some vtp_data 
  vtp_trigtime = 0;

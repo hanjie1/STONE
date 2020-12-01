@@ -15,8 +15,15 @@ Int_t fadc_time[FADC_NCHAN];          // pulse time for the first hit per channe
 Int_t fadc_int_1[FADC_NCHAN];         // ADC integral for the second hit per channel 
 Int_t fadc_time_1[FADC_NCHAN];        // pulse time for the second hit per channel
 Int_t fadc_nhit[FADC_NCHAN];          // number of hits per channel
-
+Int_t fadc_scal_cnt[16];	      // FADC scaler counts per channel
+Int_t fadc_scal_time;		      // FADC scaler timer
+Int_t fadc_scal_trigcnt;	      // FADC scaler trigger count
 Int_t frawdata[FADC_NCHAN][MAXRAW];   // raw mode ADC samples
+
+Int_t fadc_scal_update;		      // flag showing if the FADC scaler is updated
+Int_t fadc_scal_precnt[16];	      // previous FADC scaler counts per channel
+Int_t fadc_scal_pretime;	      // previoud FADC scaler timer
+Int_t fadc_scal_rate[16];	      // the events rate per channel calculated from the scaler counts and timer
 
 /***  VTP tree variables ***/
 ULong64_t vtp_trigtime;                          // vtp trigger time
