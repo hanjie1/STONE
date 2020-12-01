@@ -202,6 +202,11 @@ rocDownload()
 
       /* Enable busy output when too many events are being processed */
       faSetTriggerBusyCondition(faSlot(ifa), 3);
+
+      /* set fadc scaler */
+      int scaler_status = faSetScalerBlockInterval(faSlot(ifa),100);
+      if(scaler_status<0) printf("faSetScalerBlockInterval failed\n");
+      else printf("faSetScalerBlockInterval successfull\n");
     }
 
   sdSetActiveVmeSlots(faScanMask()); /* Tell the sd where to find the fadcs */
