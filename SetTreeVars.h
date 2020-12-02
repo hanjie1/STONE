@@ -27,7 +27,6 @@ Int_t fadc_scal_rate[16];	      // the events rate per channel calculated from t
 
 /***  VTP tree variables ***/
 ULong64_t vtp_trigtime;                          // vtp trigger time
-Int_t vtp_fadc_scalcnt[FADC_NCHAN];   // vtp helicity based scaler fadc counts
 Int_t trigcnt[5];                     // vtp helicity based trigger counts
 Int_t busytime;                       // busy time
 Int_t livetime;                       // live time
