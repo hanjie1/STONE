@@ -72,7 +72,6 @@ int main ()
 
   TTree *VTP = new TTree("VTP","vtp data");
   VTP->Branch("vtp_trigtime", &vtp_trigtime, "vtp_trigtime/l");
-  VTP->Branch("fadc_scalcnt",vtp_fadc_scalcnt,Form("vtp_fadc_scalcnt[%d]/I",FADC_NCHAN));
   VTP->Branch("busytime",&busytime,"busytime/I");
   VTP->Branch("livetime",&livetime,"livetime/I");
   VTP->Branch("hel_win_cnt_1",&hel_win_cnt_1,"hel_win_cnt_1/I");
@@ -416,7 +415,6 @@ void ClearTreeVar(){
 
  ClearVTP();  // clear some vtp_data 
  vtp_trigtime = 0;
- memset(vtp_fadc_scalcnt, 0, FADC_NCHAN*sizeof(vtp_fadc_scalcnt[0]));
  busytime = 0;
  livetime = 0;
  hel_win_cnt_1 = 0;

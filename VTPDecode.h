@@ -186,11 +186,6 @@ void vtpDataDecode(unsigned int data){
 			 if(sub_type_10 < 129){
 				vtp_data.chan = (data >> 24) & 0x7f ;
 				vtp_data.scal_cnt = (data & 0xffffff);
-				if(vtp_data.chan >= 16)
-				  printf("VTP Warning: fadc channel %d >= 16\n",vtp_data.chan);
-				else{
-				  if(vtp_data.slot_id_strip == FADC_SLOT)   vtp_fadc_scalcnt[vtp_data.chan]=vtp_data.scal_cnt;
-				}
 
 			    if(i_print)
 				  printf("%8X - VTP SCALER - CHAN %d scaler counts = %d\n", data, vtp_data.chan, vtp_data.scal_cnt);

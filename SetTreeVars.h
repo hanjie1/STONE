@@ -16,7 +16,7 @@ Int_t fadc_int_1[FADC_NCHAN];         // ADC integral for the second hit per cha
 Int_t fadc_time_1[FADC_NCHAN];        // pulse time for the second hit per channel
 Int_t fadc_nhit[FADC_NCHAN];          // number of hits per channel
 Int_t fadc_scal_cnt[16];	      // FADC scaler counts per channel
-Int_t fadc_scal_time;		      // FADC scaler timer
+Int_t fadc_scal_time;		      // FADC scaler timer in the unit of 2048 ns
 Int_t fadc_scal_trigcnt;	      // FADC scaler trigger count
 Int_t frawdata[FADC_NCHAN][MAXRAW];   // raw mode ADC samples
 
@@ -27,10 +27,9 @@ Int_t fadc_scal_rate[16];	      // the events rate per channel calculated from t
 
 /***  VTP tree variables ***/
 ULong64_t vtp_trigtime;                          // vtp trigger time
-Int_t vtp_fadc_scalcnt[FADC_NCHAN];   // vtp helicity based scaler fadc counts
 Int_t trigcnt[5];                     // vtp helicity based trigger counts
-Int_t busytime;                       // busy time
-Int_t livetime;                       // live time
+Int_t busytime;                       // busy time in the unit of 4 ns
+Int_t livetime;                       // live time in the unit of 4 ns
 Int_t hel_win_cnt_1;                  // helicity window counts in helicity based trigger scalers
 Int_t trig_pattern[64];               // trigger bit pattern
 Int_t trig_pattern_time[64];          // trigger bit pattern time
