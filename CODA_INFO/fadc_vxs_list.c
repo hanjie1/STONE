@@ -123,9 +123,9 @@ rocDownload()
 
 #if defined(TIRANDOMPULSER) && defined(FADCPLAYBACK)
     /* Enable Random at rate 500kHz/(2^n) -- tiSetRandomTrigger(2,n)*/
-    tiSetRandomTrigger(2,0xe);  // playback trigger
+    tiSetRandomTrigger(2,0x3);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
-    tiSetRandomTrigger(1,0xe);
+    tiSetRandomTrigger(1,0x8);
 #endif
 
 #if defined(TIFIXEDPULSER) && defined(FADCPLAYBACK)
@@ -270,6 +270,7 @@ rocPrestart()
   tiSetBlockLevel(blockLevel);
   printf("rocPrestart: Block Level set to %d\n",blockLevel);
 
+  tiSetEvTypeScalers(1);
   tiStatus(0);
   faGStatus(0);
 
@@ -281,7 +282,6 @@ void
 rocGo()
 {
   int fadc_mode = 0, pl=0, ptw=0, nsb=0, nsa=0, np=0;
-
   /* Get the current block level */
   blockLevel = tiGetCurrentBlockLevel();
   printf("%s: Current Block Level = %d\n",
@@ -306,6 +306,7 @@ rocGo()
   faGEnable(0, 0);
 
   /* Interrupts/Polling enabled after conclusion of rocGo() */
+
 }
 
 void
@@ -339,6 +340,7 @@ rocEnd()
 
   tiStatus(0);
 
+  tiPrintEvTypeScalers();
   printf("rocEnd: Ended after %d events\n",tiGetIntCount());
 
 }
