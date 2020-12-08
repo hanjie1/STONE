@@ -30,8 +30,8 @@
 
 #define BUFFERLEVEL 1
 #define BLOCKLEVEL 1
-#define TIRANDOMPULSER  // using TI internal random pulser as trigger
-//#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
+//#define TIRANDOMPULSER  // using TI internal random pulser as trigger
+#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
 #define FADCPLAYBACK   // turn on fadc playback feature
 #define USE_VTP
 #define USE_HELBOARD
@@ -57,6 +57,8 @@ unsigned int MAXFADCWORDS=0;
 /* SD variables */
 static unsigned int sdScanMask = 0;
 
+/* trigger counts to renew the tiSoftTrig */
+unsigned int ntrigger=0; 
 
 /* function prototype */
 void rocTrigger(int arg);
@@ -126,13 +128,6 @@ rocDownload()
     tiSetRandomTrigger(2,0x3);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
     tiSetRandomTrigger(1,0x8);
-#endif
-
-#if defined(TIFIXEDPULSER) && defined(FADCPLAYBACK)
-    /* Enable fixed rate with period (ns) 120 +30*700*(2048^0) = 21.1 us (~47.4 kHz) - Generated 1000 times */
-    tiSoftTrig(2,1000,700,0);   // playback trigger
-#elif defined(TIFIXEDPULSER) && (!defined(FADCPLAYBACK))
-    tiSoftTrig(1,1000,700,0);   // playback trigger
 #endif
 
   /* Init the SD library so we can get status info */
@@ -221,8 +216,6 @@ rocDownload()
   tiSetBusySource(TI_BUSY_LOOPBACK | TI_BUSY_SWB | TI_BUSY_SWA, 0);
 #endif
 
-
-
    // **  helicity board  **//
 #ifdef USE_HELBOARD
 //30 Hz t_settle 60 us
@@ -302,6 +295,14 @@ rocGo()
    */
   MAXFADCWORDS = nfadc * (4 + blockLevel * (4 + 16 * (1 + (ptw / 2))) + 18);
 
+#if defined(TIFIXEDPULSER) && defined(FADCPLAYBACK)
+    /* Enable fixed rate with period (ns) 120 +30*700*(2048^0) = 21.1 us (~47.4 kHz) - Generated 1000 times */
+    tiSoftTrig(2,100,700,1);   // playback trigger
+#elif defined(TIFIXEDPULSER) && (!defined(FADCPLAYBACK))
+    tiSoftTrig(1,100,700,0);   // playback trigger
+#endif
+
+
   /*  Enable FADC */
   faGEnable(0, 0);
 
@@ -318,7 +319,7 @@ rocEnd()
 #endif
 #if defined(TIFIXEDPULSER) && defined(FADCPLAYBACK)
      /* Disable Fixed Rate trigger */
-   tiSoftTrig(2,0,700,0);
+   tiSoftTrig(2,0,700,1);
 #elif defined(TIFIXEDPULSER) && !defined(FADCPLAYBACK)
    tiSoftTrig(1,0,700,0);
 #endif
@@ -353,6 +354,20 @@ rocTrigger(int arg)
   int roType = 2, roCount = 0, blockError = 0;
 
   roCount = tiGetIntCount();
+
+#ifdef TIFIXEDPULSER
+  if(ntrigger==100){
+    #ifdef FADCPLAYBACK
+    /* Enable fixed rate with period (ns) 120 +30*700*(2048^0) = 21.1 us (~47.4 kHz) - Generated 1000 times */
+     tiSoftTrig(2,100,700,1);   // playback trigger
+    #else
+     tiSoftTrig(1,100,700,0);   // playback trigger
+    #endif
+    ntrigger = 0;
+  }
+#endif
+  ntrigger = ntrigger+1;
+  //printf("trigger %d\n",ntrigger);
 
   /* Setup Address and data modes for DMA transfers
    *
