@@ -1,13 +1,14 @@
 #include "CalcDT.C"
 
 void PlotAll(){
-     int run_number[8]={159,160,161,186,163,165,166,187};
-     int nn[8] = {14,8,7,9,6,5,4,3};
+     const int np=10; 
+     int run_number[np]={159,160,161,186,163,165,166,187,193,204};
+     int nn[np] = {14,8,7,9,6,5,4,3,2,1};
 
      TGraph *gDT1 = new TGraph(8);
      TGraph *gDT2 = new TGraph(8);
 
-     for(int ii=0; ii<8; ii++){
+     for(int ii=0; ii<np; ii++){
 	Double_t dt1=0, dt2=0;
 	CalcDT(run_number[ii],dt1,dt2);
 

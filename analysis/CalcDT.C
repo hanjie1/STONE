@@ -31,14 +31,14 @@ void CalcDT(int nrun, Double_t& dt1, Double_t& dt2){
 
      dt1 = total_true_ch0/total_scal_ch0;
      dt2 = total_scal_trig/total_scal_ch0;
-
+/*
      cout<<"-------------------"<<nrun<<"------------------------"<<endl;
      cout<<"ch0      scal_ch0      scal_trigcnt       vtp_trigcnt"<<endl;
      cout<<total_true_ch0<<"  "<<total_scal_ch0<<"  "<<total_scal_trig<<"  "<<total_vtp_trig<<endl;
      cout<<"dt1      dt2"<<endl;
      cout<<dt1<<"    "<<dt2<<endl;
      cout<<"-----------------------------------------------------"<<endl;
-
+*/
 
 
 }
