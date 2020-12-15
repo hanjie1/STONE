@@ -13,5 +13,5 @@
 #define VTP_SLOT       11 
 
 
-const int FADC_NCHAN=5;        // FADC maximum number of channels
+const int FADC_NCHAN=16;        // FADC maximum number of channels
 const int MAXRAW=250;	       // FADC raw mode maximum window width

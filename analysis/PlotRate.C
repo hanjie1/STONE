@@ -1,4 +1,4 @@
-void CalcRate(int nrun){
+void PlotRate(int nrun){
      TString filename = Form("../Rootfiles/fadctest_%d.root", nrun);
 
      TFile *f0 = new TFile(filename);
@@ -14,7 +14,7 @@ void CalcRate(int nrun){
 
      Int_t prev_cnt[16]={0};
      Int_t prev_time=0, prev_trigcnt=0;
-     Int_t nskip=100000;
+     Int_t nskip=20000;
 
      TGraph *gRate0 = new TGraph();
      TGraph *gRate1 = new TGraph();
@@ -27,7 +27,7 @@ void CalcRate(int nrun){
 
 	Int_t delta_n = fadc_scal_trigcnt-prev_trigcnt; 
 
- 	if(delta_n==nskip){
+ 	if(delta_n>nskip){
 	   Double_t delta_T = (fadc_scal_time - prev_time)*2048.0*1e-9;  // s
 	   if(delta_T==0) cout<<"Something with the time !"<<endl;
 	   Double_t rate0 = (fadc_scal_cnt[0]-prev_cnt[0])*1.0/delta_T;
