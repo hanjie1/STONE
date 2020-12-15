@@ -28,10 +28,10 @@
 #include "fadc250Config.h"
 #include "HelBoard.c"
 
-#define BUFFERLEVEL 1
-#define BLOCKLEVEL 1
-//#define TIRANDOMPULSER  // using TI internal random pulser as trigger
-#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
+#define BUFFERLEVEL 25
+#define BLOCKLEVEL 25
+#define TIRANDOMPULSER  // using TI internal random pulser as trigger
+//#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
 #define FADCPLAYBACK   // turn on fadc playback feature
 #define USE_VTP
 #define USE_HELBOARD
@@ -125,7 +125,7 @@ rocDownload()
 
 #if defined(TIRANDOMPULSER) && defined(FADCPLAYBACK)
     /* Enable Random at rate 500kHz/(2^n) -- tiSetRandomTrigger(2,n)*/
-    tiSetRandomTrigger(2,0x3);  // playback trigger
+    tiSetRandomTrigger(2,0xe);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
     tiSetRandomTrigger(1,0x8);
 #endif
@@ -365,9 +365,9 @@ rocTrigger(int arg)
     #endif
     ntrigger = 0;
   }
-#endif
   ntrigger = ntrigger+1;
   //printf("trigger %d\n",ntrigger);
+#endif
 
   /* Setup Address and data modes for DMA transfers
    *
@@ -463,6 +463,13 @@ rocTrigger(int arg)
 */	    }
 	}
     }
+
+#if defined(TIFIXEDPULSER) && defined(FADCPLAYBACK)
+    /* Enable fixed rate with period (ns) 120 +30*700*(2048^0) = 21.1 us (~47.4 kHz) - Generated 1000 times */
+    tiSoftTrig(2,100,700,1);   // playback trigger
+#elif defined(TIFIXEDPULSER) && (!defined(FADCPLAYBACK))
+    tiSoftTrig(1,100,700,0);   // playback trigger
+#endif
 
 }
 

@@ -64,7 +64,7 @@ FADC250_NSA       128
 FADC250_MODE      3
 
 #       channel:      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
-FADC250_ADC_MASK      1  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0
+FADC250_ADC_MASK      1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 FADC250_TRG_MASK      1  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0
 FADC250_INVERT_MASK   0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_PLAYBACK_DISABLE_MASK   0  1  0  0  1  0  0  0  0  0  0  0  0  0  0  0
@@ -76,7 +76,7 @@ FADC250_TET_IGNORE_MASK 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 #       channel:     0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
 FADC250_DAC 3250
-FADC250_ALLCH_TET  103  750  0  0 1000  0  0  0  0  0  0  0  0  0  0  0
+FADC250_ALLCH_TET  103  750  103  103 1000  103  103  103  103  103  103  103  103  103  103  103
 FADC250_ALLCH_PED    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_GAIN 1.0
 
