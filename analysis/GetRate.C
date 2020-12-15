@@ -6,7 +6,7 @@ Double_t GetRate(int nrun, int chan){
      	
      gROOT->SetBatch(kTRUE);
    
-     TH1F *hrate = new TH1F("hrate","rate distribution",15000,0,150000);
+     TH1F *hrate = new TH1F("hrate","rate distribution",25000,0,250000);
      T->Draw(Form("fadc_scal_rate[%d]>>hrate",chan),"fadc_scal_trigcnt!=0");
      Double_t aRate = hrate->GetBinCenter(hrate->GetMaximumBin());
 

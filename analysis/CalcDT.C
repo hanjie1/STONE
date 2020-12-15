@@ -1,4 +1,4 @@
-void CalcDT(int nrun, Double_t& dt1, Double_t& dt2){
+void CalcDT(int nrun, Double_t& dt1, Double_t& dt2, Double_t& dt1_err, Double_t& dt2_err){
 
      TString filename = Form("../Rootfiles/fadctest_%d.root", nrun);
 
@@ -31,6 +31,10 @@ void CalcDT(int nrun, Double_t& dt1, Double_t& dt2){
 
      dt1 = total_true_ch0/total_scal_ch0;
      dt2 = total_scal_trig/total_scal_ch0;
+
+     dt1_err = dt1 * sqrt(1./total_true_ch0 - 1./total_scal_ch0);
+     dt2_err = dt2 * sqrt(1./total_scal_trig - 1./total_scal_ch0);
+
 /*
      cout<<"-------------------"<<nrun<<"------------------------"<<endl;
      cout<<"ch0      scal_ch0      scal_trigcnt       vtp_trigcnt"<<endl;
