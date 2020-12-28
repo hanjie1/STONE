@@ -12,7 +12,7 @@
 
 /* Event Buffer definitions */
 #define MAX_EVENT_POOL     10
-#define MAX_EVENT_LENGTH   1024*60      /* Size in Bytes */
+#define MAX_EVENT_LENGTH   1024*500      /* Size in Bytes */
 
 /* Define Interrupt source and address */
 #define TI_MASTER
@@ -28,8 +28,8 @@
 #include "fadc250Config.h"
 #include "HelBoard.c"
 
-#define BUFFERLEVEL 25
-#define BLOCKLEVEL 25
+#define BUFFERLEVEL 10
+#define BLOCKLEVEL 30
 #define TIRANDOMPULSER  // using TI internal random pulser as trigger
 //#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
 #define FADCPLAYBACK   // turn on fadc playback feature
@@ -164,8 +164,9 @@ rocDownload()
      int nchan,nsam;
      for(nchan=0; nchan<16; nchan++){
         for(nsam=0;nsam<32;nsam++){
-          if(nsam<10) sdata[nchan*32+nsam] = 60*nsam+100;
-          else sdata[nchan*32+nsam] = -30*nsam+1000;
+          if(nsam<4) sdata[nchan*32+nsam] = 160*nsam+100;
+	  if(nsam>=4 && nsam<12) sdata[nchan*32+nsam] = 580-60*(nsam-3);
+          if(nsam>=12) sdata[nchan*32+nsam] = 100;
         }
      }
 
