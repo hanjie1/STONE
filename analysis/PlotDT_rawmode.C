@@ -1,19 +1,14 @@
-#include "CalcDT.C"
+#include "CalcRawDT.C"
 #include "GetRate.C"
 
-void PlotDT(){
-     const int np=8; 
-     //int run_number[np]={159,160,161,186,163,165,166,187,193,204};
-     //int nn[np] = {14,8,7,9,6,5,4,3,2,1};
-
-     //int run_number[np]={257,258,259,262,263,264,266,267};
+void PlotDT_rawmode(){
+     const int np=6; 
+     
+     //int run_number[np]={337,336,335,334,333,332,328,331};
      //int nn[np] = {9,8,7,6,5,4,3,2};
 
-     //int run_number[np]={228,229,223,224,225,226,227};
-     //int nn[np] = {8,7,6,5,4,3,2};
-     
-     int run_number[np]={311,310,309,308,305,304,302,303};
-     int nn[np] = {9,8,7,6,5,4,3,2};
+     int run_number[np]={358,357,356,355,352,351};
+     int nn[np] = {9,8,7,6,5,4};
 
      TGraphErrors *gDT1 = new TGraphErrors();
      TGraphErrors *gDT2 = new TGraphErrors();
@@ -21,11 +16,11 @@ void PlotDT(){
      TGraph *gRate_ch0_n = new TGraph(); // rate calculated as 460 kHz/2^(n-1)
 
      ofstream outfile1;
-     outfile1.open("deadtime.txt",ios::app);
+     outfile1.open("deadtime_rawmode.txt",ios::app);
      for(int ii=0; ii<np; ii++){
 	Double_t dt1=0, dt2=0;
 	Double_t dt1_err=0, dt2_err=0;
-	CalcDT(run_number[ii],dt1,dt2,dt1_err,dt2_err);
+	CalcRawDT(run_number[ii],dt1,dt2,dt1_err,dt2_err);
 
 	gDT1->SetPoint(ii,nn[ii],1-dt1);
 	gDT1->SetPointError(ii,0,dt1_err);

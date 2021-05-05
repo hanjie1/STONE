@@ -14,7 +14,7 @@ void PlotRate(int nrun){
 
      Int_t prev_cnt[16]={0};
      Int_t prev_time=0, prev_trigcnt=0;
-     Int_t nskip=20000;
+     Int_t nskip=500;
 
      TGraph *gRate0 = new TGraph();
      TGraph *gRate1 = new TGraph();
@@ -45,14 +45,16 @@ void PlotRate(int nrun){
 
      }
 
-     TCanvas *c1 = new TCanvas("c1","c1",1000,1000);
+     TCanvas *c1 = new TCanvas("c1","c1",1000,1500);
      c1->Divide(2,1);
      c1->cd(1);
      gRate0->SetMarkerStyle(8);
      gRate0->Draw("AP");
+     gRate0->SetTitle("Chan0 rate;entry;rate;");
 
      c1->cd(2);
      gRate1->SetMarkerStyle(8);
      gRate1->Draw("AP");
+     gRate1->SetTitle("Chan1 rate;entry;rate;");
 
 }

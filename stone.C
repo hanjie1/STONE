@@ -87,7 +87,7 @@ int main ()
   /* Open file  */
   while(ndatafile<20){ // loop all data files
   char datapath[100];
-  sprintf(datapath,"/home/daq/data/fadctest/fadc_test_%d.dat.%d",run_number,ndatafile);
+  sprintf(datapath,"/home/daq/tmpdata/fadctest/fadc_test_%d.dat.%d",run_number,ndatafile);
 
   ifstream infile(datapath);
   if(!infile){
