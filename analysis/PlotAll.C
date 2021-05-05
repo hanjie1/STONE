@@ -1,9 +1,9 @@
 #include "CalcDT.C"
 
 void PlotAll(){
-     const int np=10; 
-     int run_number[np]={159,160,161,186,163,165,166,187,193,204};
-     int nn[np] = {14,8,7,9,6,5,4,3,2,1};
+     const int np=2; 
+     int run_number[np]={306,307};
+     int nn[np] = {3,2};
 
      TGraph *gDT1 = new TGraph(8);
      TGraph *gDT2 = new TGraph(8);
