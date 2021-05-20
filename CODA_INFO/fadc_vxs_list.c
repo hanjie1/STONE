@@ -27,6 +27,7 @@
 #include "fadcLib.h"        /* library of FADC250 routines */
 #include "fadc250Config.h"
 #include "HelBoard.c"
+#include "HAPTB_util.c"
 
 #define BUFFERLEVEL 10
 #define BLOCKLEVEL 40
@@ -35,6 +36,9 @@
 #define FADCPLAYBACK   // turn on fadc playback feature
 #define USE_VTP
 #define USE_HELBOARD
+#define USE_HAPTB
+
+int haptb_ramp_value = 12000;
 
 /* FADC Library Variables */
 extern int fadcA32Base, nfadc;
@@ -231,6 +235,18 @@ rocDownload()
   else printf("Helicity board write failed\n");
 #endif
 
+   // **  happex timing board  **//
+#ifdef USE_HAPTB
+//30 Hz t_settle 60 us
+  pickTB(0); // There are two HAPTBs possible... maybe need to worry about this later
+  initHAPTB();  
+  dumpRegHAPTB();
+  haptb_ramp_value = setDACHAPTB(2,23000);  
+  dumpRegHAPTB();
+
+  //if(hel_status1==0 && hel_status4==0) printf("Helicity board write successfully\n");
+  printf("Overwrite prior value %d with %d\n",haptb_ramp_value,23000);
+#endif
 
   tiStatus(0);
   sdStatus(0);
@@ -350,6 +366,12 @@ rocEnd()
 void
 rocTrigger(int arg)
 {
+#ifdef USE_HAPTB
+  // FIXME NEW HAPPEX Timing Board ramp
+  haptb_ramp_value = setDACHAPTB(2,haptb_ramp_value+10);  
+  printf("HAPTB ramped to %d\ n",haptb_ramp_value);
+#endif
+
   int ifa = 0, stat, nwords, dCnt;
   unsigned int datascan, scanmask;
   int roType = 2, roCount = 0, blockError = 0;
@@ -389,7 +411,6 @@ rocTrigger(int arg)
     {
       dma_dabufp += dCnt;
     }
-
   /* fADC250 Readout */
   BANKOPEN(FADC_BANK,BT_UI4,0);
 
