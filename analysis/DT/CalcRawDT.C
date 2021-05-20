@@ -1,9 +1,9 @@
-#include "../SetParams.h"
-void CalcRawDT(int nrun, Double_t& dt1, Double_t& dt2, Double_t& dt1_err, Double_t& dt2_err){
+#include "../../SetParams.h"
+void CalcRawDT(int nrun, int chan, Double_t& dt1, Double_t& dt2, Double_t& dt1_err, Double_t& dt2_err){
 
-     TString filename = Form("../Rootfiles/fadctest_%d.root", nrun);
+     TString filename = Form("../../Rootfiles/fadctest_%d.root", nrun);
 
-     Int_t NPED=100;
+     Int_t NPED[16]={100,800,100,100,100,100,100,100,100,100,100,100,100,100,100,100};
 
      TFile *f0 = new TFile(filename);
      TTree *T = (TTree*) f0->Get("T");
@@ -26,11 +26,11 @@ void CalcRawDT(int nrun, Double_t& dt1, Double_t& dt2, Double_t& dt1_err, Double
 
 	int nsample=0;
         for(int jj=0; jj<MAXRAW; jj++)
-	   if( fadc_rawADC[0][jj]>NPED )nsample++;  
+	   if( fadc_rawADC[chan][jj]>NPED[chan] )nsample++;  
 
 	if(nsample>4) total_true_ch0 += 1;
 
-	if(fadc_scal[0]>total_scal_ch0) total_scal_ch0 =fadc_scal[0];
+	if(fadc_scal[chan]>total_scal_ch0) total_scal_ch0 =fadc_scal[chan];
 	if(fadc_scal_trigcnt>total_scal_trig) total_scal_trig = fadc_scal_trigcnt; 
 	if(vtp_trigcnt[2]>0) total_vtp_trig += vtp_trigcnt[2]; 
      }

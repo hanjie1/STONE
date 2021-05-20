@@ -4,8 +4,8 @@
 void PlotDT_rawmode(){
      const int np=6; 
      
-     //int run_number[np]={337,336,335,334,333,332,328,331};
-     //int nn[np] = {9,8,7,6,5,4,3,2};
+     //int run_number[np]={399,400,401,402,403,337,336,335,334,333,332,328,331};
+     //int nn[np] = {14,13,12,11,10,9,8,7,6,5,4,3,2};
 
      int run_number[np]={358,357,356,355,352,351};
      int nn[np] = {9,8,7,6,5,4};
@@ -20,7 +20,7 @@ void PlotDT_rawmode(){
      for(int ii=0; ii<np; ii++){
 	Double_t dt1=0, dt2=0;
 	Double_t dt1_err=0, dt2_err=0;
-	CalcRawDT(run_number[ii],dt1,dt2,dt1_err,dt2_err);
+	CalcRawDT(run_number[ii],0, dt1,dt2,dt1_err,dt2_err);
 
 	gDT1->SetPoint(ii,nn[ii],1-dt1);
 	gDT1->SetPointError(ii,0,dt1_err);

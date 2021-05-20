@@ -17,6 +17,7 @@
 #include "SetTreeVars.h"
 #include "Fadc250Decode.h"
 #include "VTPDecode.h"
+#include "FindHelicity.h"
 
 using namespace std;
 
@@ -81,6 +82,8 @@ int main ()
   VTP->Branch("trig_pattern_time",trig_pattern_time,"trig_pattern_time[pattern_num]/I");
   VTP->Branch("last_mps_time",&last_mps_time,"last_mps_time/I");
   VTP->Branch("hel_win_cnt",&hel_win_cnt,"hel_win_cnt/I");
+  VTP->Branch("vtp_past_hel",vtp_past_hel,"vtp_past_hel[6]/I");
+  VTP->Branch("vtp_helicity", &vtp_helicity, "vtp_helicity/I");
 
 
   nevents=1;
@@ -322,6 +325,10 @@ int main ()
                  new_data = LSWAP(simpDataBuf[idata]);
                  vtpDataDecode(new_data);
              }
+             for(int mm=0;mm<6;mm++)
+                vtp_past_hel[mm] = vtp_data.helicity[mm];
+
+             vtp_helicity = InvertBit((vtp_past_hel[0] & 0x1));   // most recent helicity seen by VTP
           }
 
           T->Fill();
@@ -424,5 +431,6 @@ void ClearTreeVar(){
  memset(trig_pattern_time, 0, 64*sizeof(trig_pattern_time[0]));
  last_mps_time = 0;
  hel_win_cnt = 0;
-	 
+ vtp_helicity = 0;
+ memset(vtp_past_hel, 0, 6*sizeof(vtp_past_hel[0]));
 }
