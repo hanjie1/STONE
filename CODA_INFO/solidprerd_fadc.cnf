@@ -66,7 +66,7 @@ FADC250_MODE      1
 #       channel:      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
 FADC250_ADC_MASK      1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_TRG_MASK      1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0
-FADC250_INVERT_MASK   0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+FADC250_INVERT_MASK   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_PLAYBACK_DISABLE_MASK   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 # Set MPS (ch1) & helicity (ch2) & busy (ch4) to discriminator mode for trigger path
 FADC250_TRG_MODE_MASK 0  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0 
