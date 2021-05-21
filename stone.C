@@ -328,7 +328,8 @@ int main ()
              for(int mm=0;mm<6;mm++)
                 vtp_past_hel[mm] = vtp_data.helicity[mm];
 
-             vtp_helicity = InvertBit((vtp_past_hel[0] & 0x1));   // most recent helicity seen by VTP
+             //vtp_helicity = InvertBit((vtp_past_hel[0] & 0x1));   // most recent helicity seen by VTP
+             vtp_helicity = (vtp_past_hel[0] & 0x1);   // most recent helicity seen by VTP
           }
 
           T->Fill();
