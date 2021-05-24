@@ -24,6 +24,7 @@ void PrintHel(){
     Int_t pre_hel_win=0;
     Int_t nhel=0;
 
+    int nn=0;
     for(int ii=0; ii<nentries; ii++){
 	VTP->GetEntry(ii);
 
@@ -39,6 +40,8 @@ void PrintHel(){
 		int bit= (past_hel[5-jj] & bitmask);
 		bit = bit>>(nbit-1-kk);
 		cout<<bit;
+		//cout<<nn<<"  "<<bit<<endl;
+		nn++;
 		bitmask=bitmask>>1;
 	     }
 	   }    

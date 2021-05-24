@@ -1,5 +1,5 @@
 #include "/home/daq/work/SOLID_DAQ/decoder/SetParams.h"
-#include "/home/daq/work/SOLID_DAQ/decoder/FindHelicity.h"
+#include "FindHelicity.h"
 #include "FindPulses.h"
 
 void CalcAsym(){
@@ -36,6 +36,7 @@ void CalcAsym(){
     TH1F *hasym = new TH1F("hasym","asymmetry distribution",100,-1,1);
 
     bool change=false;
+    bool firstcheckhel=true;
     int pre_hel=0;
 
     int np_tot=0;
@@ -43,29 +44,41 @@ void CalcAsym(){
 
     int helpos=0;
     int ndiff=0;
+    int quadstart=0;
     
     int vtp_pre_hel=0;
     int vtp_pre_win=0; 
     int vtp_cur_win=0; 
     int vtp_cur_hel=0; 
+    int Nplus_quad=0, Nminus_quad=0;
 
-    bool findquad=false;
+    bool isquad=false;
+   
     for(int ii=0; ii<nentries; ii++){
 	T->GetEntry(ii);
 
+ 	struct fadc_pulse pulses[2];
+	pulses[0]=FindPulses(fadc_rawADC[0],width,NPED[0]);   // channel 0: asymmetry signals
+	pulses[1]=FindPulses(fadc_rawADC[2],width,NPED[2]);   // channel 2: helicity signals 
+
+// find the hel_win_cnt for the first quad, and initialize pre_hel, pre_win
 	if(ii==0){
-	   findquad=FindQuad(past_hel, &helpos);
-	   if(findquad) cout<<"found the start of quad at: "<<hel_win_cnt<<endl;
-	   cout<<"start quad:  "<<helpos<<endl;
+	   quadstart=FindQuad(past_hel, &helpos);
+	   helpos=helpos+1;
+	   quadstart=hel_win_cnt+(quadstart+1-maxbits);
+	   //cout<<"Quad start at  "<<quadstart<<"  "<<hel_win_cnt<<endl;
+	   if(quadstart==-1) cout<<"Couldn't find the start of quad"<<endl;
+	   //cout<<"Quad start at  "<<helpos<<endl;
 
 	   vtp_pre_hel=vtp_hel;
 	   vtp_pre_win=hel_win_cnt;
+	   pre_hel=pulses[1].npulse;
 	}	
-
 
 	vtp_cur_win=hel_win_cnt;
 	vtp_cur_hel=vtp_hel;
 
+// check if the vtp helicity is the same as fadc helicity; vtp helicity is one window late than the fadc hel
 	if(vtp_cur_win!=vtp_pre_win){
 	  int win_df=vtp_cur_win-vtp_pre_win;
 	  if(win_df>1) cout<<"Something wrong with the hel win counts"<<endl;
@@ -75,26 +88,35 @@ void CalcAsym(){
 	  vtp_pre_hel=vtp_cur_hel;
 	  vtp_pre_win=vtp_cur_win;  
 
-	  if(findquad==false){
-	     findquad=FindQuad(past_hel, &helpos);
-	     if(findquad) cout<<"found the start of quad at: "<<hel_win_cnt<<endl;
+// check if the helicity matches the prediction
+	  if((vtp_cur_win-quadstart)>120 && firstcheckhel){
+	     int tmp=maxbits-(vtp_cur_win-quadstart)-1;
+	     bool checkquad=CheckQuad(past_hel, tmp);
+	     if(checkquad==false) cout<<"Couldn't match the prediction"<<endl;
+	     firstcheckhel=false;
 	  }
+	  change=true;
+	  helpos=(helpos+1)%4;
+
+	  if(helpos==0) {
+	     isquad=true;
+	     double tmp_asym=0;
+	     if((Nplus_quad+Nminus_quad)>0) tmp_asym=1.0*(Nplus_quad-Nminus_quad)/(1.0*(Nplus_quad+Nminus_quad));
+	     hasym->Fill(tmp_asym);
+
+	     Nplus_quad=0;
+	     Nminus_quad=0;
+	  }
+	  else isquad=false;
 	}
 
-
- 	struct fadc_pulse pulses[2];
-	pulses[0]=FindPulses(fadc_rawADC[0],width,NPED[0]);   // channel 0: asymmetry signals
-	pulses[1]=FindPulses(fadc_rawADC[2],width,NPED[2]);   // channel 2: helicity signals 
-
-	if(ii==0)   pre_hel=pulses[1].npulse;
 	int cur_hel=pulses[1].npulse;
-
-	if(cur_hel!= pre_hel) change=true;
+// fill the counts for pos/neg helicity distributions
 
 	if(change){
 	   if(pre_hel==1)hplus->Fill(Nplus);
 	   if(pre_hel==0)hminus->Fill(Nminus);
-	   
+//cout<<"!!  "<<Nplus<<" "<<Nminus<<"   "<<Nplus_quad<<"  "<<Nminus_quad<<"  "<<pre_hel<<"  "<<helpos<<endl;	   
 	   Nplus=0;
 	   Nminus=0;
 	   change=false;
@@ -103,10 +125,12 @@ void CalcAsym(){
 
 	if(cur_hel==1){
 	  Nplus += pulses[0].npulse;
+	  Nplus_quad += pulses[0].npulse;
 	  np_tot++;
 	}	
 	if(cur_hel==0){
 	  Nminus += pulses[0].npulse;
+	  Nminus_quad += pulses[0].npulse;
 	  nm_tot++;
 	}
 	if(cur_hel>1 || pulses[0].npulse>1){
@@ -119,11 +143,13 @@ void CalcAsym(){
   
     gStyle->SetOptStat(111111);
     TCanvas *c1=new TCanvas("c1","c1",1500,1500);
-    c1->Divide(2,1);
+    c1->Divide(3,1);
     c1->cd(1);
     hplus->Draw();
     c1->cd(2);
     hminus->Draw();
+    c1->cd(3);
+    hasym->Draw();
    
     cout<<nm_tot<<"  "<<np_tot<<endl; 
 }
