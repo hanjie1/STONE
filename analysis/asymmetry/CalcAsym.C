@@ -31,9 +31,9 @@ void CalcAsym(){
     Int_t nentries = T->GetEntries();
     Int_t Nplus=0, Nminus=0;
 
-    TH1F *hplus = new TH1F("hplus","counts for plus helicity",20,0,20);
-    TH1F *hminus = new TH1F("hminus","counts for minus helicity",20,0,20);
-    TH1F *hasym = new TH1F("hasym","asymmetry distribution",100,-1,1);
+    TH1F *hplus = new TH1F("hplus","counts for plus helicity",100,600,700);
+    TH1F *hminus = new TH1F("hminus","counts for minus helicity",100,600,700);
+    TH1F *hasym = new TH1F("hasym","asymmetry distribution",100,0.0005,0.001);
 
     bool change=false;
     bool firstcheckhel=true;
