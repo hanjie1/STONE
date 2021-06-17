@@ -59,4 +59,5 @@ void PrintHel(){
 	if(nhel>nevent)break;
     } 
     cout<<endl;
+    cout<<nn<<endl;
 }

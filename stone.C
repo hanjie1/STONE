@@ -84,6 +84,8 @@ int main ()
   VTP->Branch("hel_win_cnt",&hel_win_cnt,"hel_win_cnt/I");
   VTP->Branch("vtp_past_hel",vtp_past_hel,"vtp_past_hel[6]/I");
   VTP->Branch("vtp_helicity", &vtp_helicity, "vtp_helicity/I");
+  VTP->Branch("vtp_fadc_scalcnt",vtp_fadc_scalcnt,Form("vtp_fadc_scalcnt[%d]/I",FADC_NCHAN));
+
 
 
   nevents=1;
@@ -434,4 +436,6 @@ void ClearTreeVar(){
  hel_win_cnt = 0;
  vtp_helicity = 0;
  memset(vtp_past_hel, 0, 6*sizeof(vtp_past_hel[0]));
+ memset(vtp_fadc_scalcnt, 0, FADC_NCHAN*sizeof(vtp_fadc_scalcnt[0]));
+
 }

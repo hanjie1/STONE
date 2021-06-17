@@ -189,6 +189,8 @@ void vtpDataDecode(unsigned int data){
 
 			    if(i_print)
 				  printf("%8X - VTP SCALER - CHAN %d scaler counts = %d\n", data, vtp_data.chan, vtp_data.scal_cnt);
+
+                            if(vtp_data.slot_id_strip == FADC_SLOT)   vtp_fadc_scalcnt[vtp_data.chan]=vtp_data.scal_cnt;
 			 }	
 		  }
 		  sub_type_10++;

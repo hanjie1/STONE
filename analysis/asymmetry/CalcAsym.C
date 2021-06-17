@@ -33,7 +33,7 @@ void CalcAsym(){
 
     TH1F *hplus = new TH1F("hplus","counts for plus helicity",100,600,700);
     TH1F *hminus = new TH1F("hminus","counts for minus helicity",100,600,700);
-    TH1F *hasym = new TH1F("hasym","asymmetry distribution",100,0.0005,0.001);
+    TH1F *hasym = new TH1F("hasym","asymmetry distribution",100,-0.01,0.01);
 
     bool change=false;
     bool firstcheckhel=true;
