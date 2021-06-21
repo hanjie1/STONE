@@ -18,7 +18,7 @@ void CalcAsym_wscaler(){
     int NPED[16]={700,0,2000,0,0,0,0,0,0,0,0,0,0,0,0,0};
     int width=30; 
 
-    Int_t fadc_scal[FADC_NCHAN];
+    Int_t fadc_scalcnt[FADC_NCHAN];
     Int_t fadc_rawADC[FADC_NCHAN][MAXRAW];
     Int_t past_hel[6]={0};
     Int_t vtp_hel=0, hel_win_cnt=0,hel_win_cnt_1=0;
@@ -28,17 +28,17 @@ void CalcAsym_wscaler(){
     T->SetBranchAddress("vtp_helicity",&vtp_hel);
     T->SetBranchAddress("hel_win_cnt",&hel_win_cnt);
     T->SetBranchAddress("hel_win_cnt_1",&hel_win_cnt_1);
-    T->SetBranchAddress("vtp_fadc_scalcnt",fadc_scal);
+    T->SetBranchAddress("vtp_fadc_scalcnt",fadc_scalcnt);
 
     Int_t nentries = T->GetEntries();
     Int_t Nplus=0, Nminus=0;
 
-    TH1F *hplus = new TH1F("hplus","counts for plus helicity",100,600,700);
-    TH1F *hminus = new TH1F("hminus","counts for minus helicity",100,600,700);
+    TH1F *hplus = new TH1F("hplus","counts for plus helicity",100,620,720);
+    TH1F *hminus = new TH1F("hminus","counts for minus helicity",100,620,720);
     TH1F *hasym = new TH1F("hasym","asymmetry distribution",200,-0.1,0.1);
 
-    TH1F *hplus_s = new TH1F("hplus_s","scaler counts for plus helicity",100,600,700);
-    TH1F *hminus_s = new TH1F("hminus_s","scaler counts for minus helicity",100,600,700);
+    TH1F *hplus_s = new TH1F("hplus_s","scaler counts for plus helicity",100,620,720);
+    TH1F *hminus_s = new TH1F("hminus_s","scaler counts for minus helicity",100,620,720);
     TH1F *hasym_s = new TH1F("hasym_s","scaler asymmetry distribution",200,-0.1,0.1);
 
     TH1F *hplus_dt = new TH1F("hplus_dt","plus helicity dead time",100,0,1);
@@ -57,11 +57,11 @@ void CalcAsym_wscaler(){
     int ndiff=0;
     int quadstart=0;
     
-    int vtp_pre_hel=0;
     int vtp_pre_win=0; 
     int vtp_cur_win=0; 
     int vtp_cur_hel=0; 
     int Nplus_quad=0, Nminus_quad=0;
+    int Nplus_quad_s=0, Nminus_quad_s=0;  //quad scaler counts
     int Nhel=0;   // counts per helicity window
     int pre_win_Nhel=0;   // counts per helicity window
 
@@ -101,6 +101,8 @@ void CalcAsym_wscaler(){
 
     cout<<"First quad wind: "<<firstquad_hel_win<<endl;
 
+    int nnwin=0;
+    bool scaler_updated=true;
     for(int ii=0; ii<nentries; ii++){
 	T->GetEntry(ii);
 
@@ -108,10 +110,11 @@ void CalcAsym_wscaler(){
 
 	if(hel_win_cnt<firstquad_hel_win) continue;
 	
-	if(hel_win_cnt!=vtp_pre_hel){
+	if(hel_win_cnt!=vtp_pre_win && scaler_updated){
 	   pre_win_Nhel=Nhel;
 	   Nhel=0;
 	   fadc_pre_hel=fadc_cur_hel;
+	   scaler_updated=false;
 	}
 
         struct fadc_pulse pulses[2];
@@ -123,20 +126,48 @@ void CalcAsym_wscaler(){
 	fadc_cur_hel=pulses[1].npulse;
 
 	if(pulses[0].npulse>1 || pulses[1].npulse>1) cout<<"More than 1 pulses are found in one fadc window:  "<<pulses[0].npulse<<"  "<<pulses[1].npulse<<endl;
-	
-	if(vtp_pre_hel==hel_win_cnt_1){  // get scaler counts for the previous hel_win_cnt
-	   if(vtp_helicity!=fadc_pre_hel) ndiff++;
+	if(vtp_pre_win==hel_win_cnt_1){  // get scaler counts for the previous hel_win_cnt
+	   if(vtp_hel!=fadc_pre_hel) ndiff++;
 
-	   if(vtp_helicity==1){
-	     hplus->Fill(pre_win_Nhel);		
-	     Nplus=Nplus+pre_win_Nhel;
-	     
+	   if(vtp_hel==1){
+	     hplus->Fill(pre_win_Nhel);		// fadc plus counts
+	     hplus_s->Fill(fadc_scalcnt[0]);	// scaler plus counts
+	    
+	     Double_t p_dt=1-1.0*pre_win_Nhel/(1.0*fadc_scalcnt[0]); // plus window dead time
+	     hplus_dt->Fill(p_dt);
+
+	     Nplus_quad=Nplus_quad+pre_win_Nhel;     // fadc plus counts for a quad
+	     Nplus_quad_s=Nplus_quad_s+fadc_scalcnt[0];  //scaler plus counts for a quad
 	   }	   
 
-	   if(vtp_helicity==1){
-	     hplus->Fill(pre_win_Nhel);		
-	     Nplus=Nplus+pre_win_Nhel;
+	   if(vtp_hel==0){
+	     hminus->Fill(pre_win_Nhel);		// fadc minus counts
+	     hminus_s->Fill(fadc_scalcnt[0]);	// scaler minus counts
+	    
+	     Double_t m_dt=1-1.0*pre_win_Nhel/(fadc_scalcnt[0]*1.0); // minus window dead time
+	     hminus_dt->Fill(m_dt);
+
+	     Nminus_quad=Nminus_quad+pre_win_Nhel;     // fadc minus counts for a quad
+	     Nminus_quad_s=Nminus_quad_s+fadc_scalcnt[0];  //scaler minus counts for a quad
 	   }	   
+
+	   nnwin++;
+
+	   FindQuad(past_hel,&helpos);
+	   helpos=helpos%4;   // helicity window of the past helicity
+	   if(helpos==3 && nnwin==4){
+	     Double_t tmp_asym=1.0*(Nplus_quad-Nminus_quad)/(1.0*Nplus_quad+Nminus_quad);
+	     hasym->Fill(tmp_asym); 
+
+             Double_t tmp_asym_s=1.0*(Nplus_quad_s-Nminus_quad_s)/(1.0*Nplus_quad_s+Nminus_quad_s);
+	     hasym_s->Fill(tmp_asym_s);
+	     nnwin=0; 
+	     Nplus_quad=0; Nminus_quad=0;
+	     Nplus_quad_s=0; Nminus_quad_s=0;
+	   }  
+
+	   vtp_pre_win=hel_win_cnt;
+	   scaler_updated=true;
 	}		
     }
 
@@ -144,13 +175,25 @@ void CalcAsym_wscaler(){
   
     gStyle->SetOptStat(111111);
     TCanvas *c1=new TCanvas("c1","c1",1500,1500);
-    c1->Divide(3,1);
+    c1->Divide(2,3);
     c1->cd(1);
     hplus->Draw();
     c1->cd(2);
     hminus->Draw();
     c1->cd(3);
+    hplus_s->Draw();
+    c1->cd(4);
+    hminus_s->Draw();
+    c1->cd(5);
+    hplus_dt->Draw();
+    c1->cd(6);
+    hminus_dt->Draw();
+
+    TCanvas *c2=new TCanvas("c2","c2",1500,1500);
+    c2->Divide(2,1);
+    c2->cd(1);
     hasym->Draw();
-   
-    cout<<nm_tot<<"  "<<np_tot<<endl; 
+    c2->cd(2);
+    hasym_s->Draw();
+       
 }
