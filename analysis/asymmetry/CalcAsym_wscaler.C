@@ -15,7 +15,7 @@ void CalcAsym_wscaler(){
     TTree *VTP = (TTree*) f0->Get("VTP");
     T->AddFriend(VTP);
 
-    int NPED[16]={700,0,2000,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    int NPED[16]={1000,2000,2000,0,0,0,0,0,0,0,0,0,0,0,0,0};
     int width=30; 
 
     Int_t fadc_scalcnt[FADC_NCHAN];
@@ -35,15 +35,17 @@ void CalcAsym_wscaler(){
 
     TH1F *hplus = new TH1F("hplus","counts for plus helicity",100,620,720);
     TH1F *hminus = new TH1F("hminus","counts for minus helicity",100,620,720);
-    TH1F *hasym = new TH1F("hasym","asymmetry distribution",200,-0.1,0.1);
+    TH1F *hasym = new TH1F("hasym","asymmetry distribution",200,-0.001,0.002);
 
     TH1F *hplus_s = new TH1F("hplus_s","scaler counts for plus helicity",100,620,720);
     TH1F *hminus_s = new TH1F("hminus_s","scaler counts for minus helicity",100,620,720);
-    TH1F *hasym_s = new TH1F("hasym_s","scaler asymmetry distribution",200,-0.1,0.1);
+    TH1F *hasym_s = new TH1F("hasym_s","scaler asymmetry distribution",200,-0.001,0.002);
 
-    TH1F *hplus_dt = new TH1F("hplus_dt","plus helicity dead time",100,0,1);
-    TH1F *hminus_dt = new TH1F("hminus_dt","minus helicity dead time",100,0,1);
-    TH1F *htotal_dt = new TH1F("htotal_dt","total helicity dead time",100,0,1);
+    TH1F *hplus_dt = new TH1F("hplus_dt","plus helicity dead time",500,-0.1,0.1);
+    TH1F *hminus_dt = new TH1F("hminus_dt","minus helicity dead time",500,-0.1,0.1);
+    TH1F *htotal_dt = new TH1F("htotal_dt","total helicity dead time",500,-0.1,0.1);
+
+    TH1F *hasym_diff = new TH1F("hasym_diff","asymmetry difference between scaler and fadc",200,-1,1);
 
     bool change=false;
     bool firstcheckhel=true;
@@ -103,6 +105,7 @@ void CalcAsym_wscaler(){
 
     int nnwin=0;
     bool scaler_updated=true;
+    //int nmps=0;
     for(int ii=0; ii<nentries; ii++){
 	T->GetEntry(ii);
 
@@ -117,15 +120,16 @@ void CalcAsym_wscaler(){
 	   scaler_updated=false;
 	}
 
-        struct fadc_pulse pulses[2];
+        struct fadc_pulse pulses[3];
         pulses[0]=FindPulses(fadc_rawADC[0],width,NPED[0]);   // channel 0: asymmetry signals
-        pulses[1]=FindPulses(fadc_rawADC[2],width,NPED[2]);   // channel 2: helicity signals 
-	
-	Nhel = Nhel+pulses[0].npulse;
+        pulses[1]=FindPulses(fadc_rawADC[1],width,NPED[1]);   // channel 1: MPS signals
+        pulses[2]=FindPulses(fadc_rawADC[2],width,NPED[2]);   // channel 2: helicity signals 
 
-	fadc_cur_hel=pulses[1].npulse;
+	if(pulses[1].npulse==0) Nhel = Nhel+pulses[0].npulse;
 
-	if(pulses[0].npulse>1 || pulses[1].npulse>1) cout<<"More than 1 pulses are found in one fadc window:  "<<pulses[0].npulse<<"  "<<pulses[1].npulse<<endl;
+	if(pulses[1].npulse==0) fadc_cur_hel=pulses[2].npulse;
+
+	if(pulses[0].npulse>1 || pulses[2].npulse>1) cout<<"More than 1 pulses are found in one fadc window:  "<<pulses[0].npulse<<"  "<<pulses[1].npulse<<endl;
 	if(vtp_pre_win==hel_win_cnt_1){  // get scaler counts for the previous hel_win_cnt
 	   if(vtp_hel!=fadc_pre_hel) ndiff++;
 
@@ -138,6 +142,7 @@ void CalcAsym_wscaler(){
 
 	     Nplus_quad=Nplus_quad+pre_win_Nhel;     // fadc plus counts for a quad
 	     Nplus_quad_s=Nplus_quad_s+fadc_scalcnt[0];  //scaler plus counts for a quad
+//cout<<hel_win_cnt_1<<"  "<<pre_win_Nhel<<"  "<<fadc_scalcnt[0]<<endl;
 	   }	   
 
 	   if(vtp_hel==0){
@@ -161,6 +166,11 @@ void CalcAsym_wscaler(){
 
              Double_t tmp_asym_s=1.0*(Nplus_quad_s-Nminus_quad_s)/(1.0*Nplus_quad_s+Nminus_quad_s);
 	     hasym_s->Fill(tmp_asym_s);
+
+	     Double_t asym_diff = (tmp_asym-tmp_asym_s)/tmp_asym_s;
+	     hasym_diff->Fill(asym_diff);
+if(asym_diff>0.1) cout<<hel_win_cnt_1<<"  "<<asym_diff<<"  "<<Nplus_quad<<"  "<<Nminus_quad<<"  "<<Nplus_quad_s<<"  "<<Nminus_quad_s<<endl;
+
 	     nnwin=0; 
 	     Nplus_quad=0; Nminus_quad=0;
 	     Nplus_quad_s=0; Nminus_quad_s=0;
@@ -190,10 +200,13 @@ void CalcAsym_wscaler(){
     hminus_dt->Draw();
 
     TCanvas *c2=new TCanvas("c2","c2",1500,1500);
-    c2->Divide(2,1);
+    c2->Divide(3,1);
     c2->cd(1);
     hasym->Draw();
     c2->cd(2);
     hasym_s->Draw();
-       
+    c2->cd(3);
+    hasym_diff->Draw();
+      
+    //cout<<"MPS:  "<<nmps<<endl; 
 }
