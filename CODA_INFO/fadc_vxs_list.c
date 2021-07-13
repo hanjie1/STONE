@@ -27,13 +27,13 @@
 #include "fadcLib.h"        /* library of FADC250 routines */
 #include "fadc250Config.h"
 #include "HelBoard.c"
-#include "HAPTB_util.c"
+#include "timebrdLib.c"
 
-#define BUFFERLEVEL 10
-#define BLOCKLEVEL 40
-#define TIRANDOMPULSER  // using TI internal random pulser as trigger
+#define BUFFERLEVEL 20
+#define BLOCKLEVEL 20
+//#define TIRANDOMPULSER  // using TI internal random pulser as trigger
 //#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
-#define FADCPLAYBACK   // turn on fadc playback feature
+//#define FADCPLAYBACK   // turn on fadc playback feature
 #define USE_VTP
 #define USE_HELBOARD
 #define USE_HAPTB
@@ -91,6 +91,8 @@ rocDownload()
 
 #ifdef FADCPLAYBACK
   tiSetTriggerSourceMask(TI_TRIGSRC_TSINPUTS | TI_TRIGSRC_PULSER | TI_TRIGSRC_VME | TI_TRIGSRC_LOOPBACK);
+#else
+  tiSetTriggerSource(TI_TRIGGER_TSINPUTS);
 #endif
 
 
@@ -129,7 +131,7 @@ rocDownload()
 
 #if defined(TIRANDOMPULSER) && defined(FADCPLAYBACK)
     /* Enable Random at rate 500kHz/(2^n) -- tiSetRandomTrigger(2,n)*/
-    tiSetRandomTrigger(2,0x9);  // playback trigger
+    tiSetRandomTrigger(2,0xa);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
     tiSetRandomTrigger(1,0x8);
 #endif
@@ -205,7 +207,7 @@ rocDownload()
 
       /* set fadc scaler */
 	
-      int scaler_status = faSetScalerBlockInterval(faSlot(ifa),100);
+      int scaler_status = faSetScalerBlockInterval(faSlot(ifa),1);
       if(scaler_status<0) printf("faSetScalerBlockInterval failed\n");
       else printf("faSetScalerBlockInterval successfull\n");
     }
@@ -223,11 +225,11 @@ rocDownload()
 
    // **  helicity board  **//
 #ifdef USE_HELBOARD
-//30 Hz t_settle 60 us
-  WriteHelBoard(0,5);
-  int hel_status1 = WriteHelBoard(1,27);
+  WriteHelBoard(0,5); //t_settle 60 us
+  int hel_status1 = WriteHelBoard(1,27); // MPS 30 Hz
+  //int hel_status1 = WriteHelBoard(1,23);   // MPS 120 Hz
   WriteHelBoard(2,0);
-  WriteHelBoard(3,1);  
+  WriteHelBoard(3,1); // quad 
   int hel_status4 = WriteHelBoard(4,3);
  
 
@@ -238,14 +240,17 @@ rocDownload()
    // **  happex timing board  **//
 #ifdef USE_HAPTB
 //30 Hz t_settle 60 us
-  pickTB(0); // There are two HAPTBs possible... maybe need to worry about this later
-  initHAPTB();  
-  dumpRegHAPTB();
-  haptb_ramp_value = setDACHAPTB(2,23000);  
-  dumpRegHAPTB();
+  timebrdInit(0x2f20,0);
+  timebrdDumpReg();
+  timebrdSetDAC(2,34098);
+  //timebrdGetDAC(2);
+  printf("Happex timing board 1: GetDAC=%d\n",timebrdGetDAC(2));
 
-  //if(hel_status1==0 && hel_status4==0) printf("Helicity board write successfully\n");
-  printf("Overwrite prior value %d with %d\n",haptb_ramp_value,23000);
+  timebrdInit(0x2f30,0);
+  timebrdDumpReg();
+  timebrdSetDAC(2,34080);
+  //timebrdGetDAC(2);
+  printf("Happex timing board 2: GetDAC=%d\n",timebrdGetDAC(2));
 #endif
 
   tiStatus(0);
@@ -366,12 +371,6 @@ rocEnd()
 void
 rocTrigger(int arg)
 {
-#ifdef USE_HAPTB
-  // FIXME NEW HAPPEX Timing Board ramp
-  haptb_ramp_value = setDACHAPTB(2,haptb_ramp_value+10);  
-  printf("HAPTB ramped to %d\ n",haptb_ramp_value);
-#endif
-
   int ifa = 0, stat, nwords, dCnt;
   unsigned int datascan, scanmask;
   int roType = 2, roCount = 0, blockError = 0;
@@ -411,6 +410,7 @@ rocTrigger(int arg)
     {
       dma_dabufp += dCnt;
     }
+
   /* fADC250 Readout */
   BANKOPEN(FADC_BANK,BT_UI4,0);
 
