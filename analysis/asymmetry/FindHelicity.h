@@ -71,10 +71,9 @@ bool CheckPattern(UInt_t bit0, UInt_t bit1, UInt_t bit2, UInt_t bit3){
 	return match;
 }
 
-bool FindQuad(Int_t past_hel[6], int *helpos){
+int FindQuad(Int_t past_hel[6], int *helpos){
 //  Find the first quad; initialize fgShreg; return the current helicity is in which window of that pattern
 
-    *helpos = 0; 
     UInt_t helbit[maxbits]={0};
 	int bit_num = maxbits-1;
     for(int jj=0; jj<6; jj++){
@@ -91,7 +90,7 @@ bool FindQuad(Int_t past_hel[6], int *helpos){
 
 	bool findpat = false;
 	bool firstquad = true;
-	int quadstart = 0;  // quartet start bit
+	int quadstart = -1;  // quartet start bit
 	int npatt = 0;      // number of quartets matched 
 	bool match = false;
 
@@ -104,7 +103,7 @@ bool FindQuad(Int_t past_hel[6], int *helpos){
 		match = CheckPattern(helbit[jj], helbit[jj+1], helbit[jj+2], helbit[jj+3]);	
 	
 		if(match == false){
-			quadstart = 0;
+			quadstart = -1;
 			break;
 		}
 	    npatt++;
@@ -115,33 +114,52 @@ bool FindQuad(Int_t past_hel[6], int *helpos){
 		   jj += 4;		   
 	  } // second pointer (jj)
 	
-	  if(quadstart!=0)break;
+	  if(quadstart!=-1)break;
 	}  // first pointer (ii)
 
+    *helpos=-1;
+    if(quadstart!=-1) *helpos=(maxbits-1-quadstart)%4;
+    return quadstart;
+} 
+
+bool CheckQuad(Int_t past_hel[6], int quadstart){
+
+    int findpat=false;
     if(quadstart >0 && quadstart<=(maxbits-120) ) findpat = true;  // at least have 30 bits for register
 
-    if(findpat){
-	 UInt_t  pred_bit = 0;
-	 int nquad = 0;
-	 int nn = 0;
-	 for(nn=quadstart; nn<maxbits;){         // initialize fgShreg
-		if(nquad<=30)pred_bit = ranBit(helbit[nn],1);   
-		if(nquad>=30 && (nn+4)<maxbits )pred_bit = ranBit(2,1);   
-		nquad++;
-		if(nquad>30 && (pred_bit != helbit[nn+4]) && (nn+4)<maxbits ){                  // check if helicity prediction is true
-			 printf("The prediction helicity does not match the real one !!\n");
-			 break;
-	    }
-		nn += 4;
-	 }
-	 *helpos = 4-(nn-maxbits+1);
+    UInt_t helbit[maxbits]={0};
+    int bit_num = maxbits-1;
+    for(int jj=0; jj<6; jj++){
+        int nbits = 30; 
+        if(jj==0) nbits = 23; 
+        for(int nnbit=0; nnbit<nbits; nnbit++)
+         {
+ 	    UInt_t tmpbit = ( past_hel[jj]>>nnbit ) & 0x1;   // the bit 0 in vtp_past_hel[0] is the most recent helicity
+            //helbit[bit_num] = InvertBit(tmpbit);
+            helbit[bit_num] = tmpbit;
+            bit_num = bit_num-1;
+         }
+    }
 
-	 fgShreg_earlier = fgShreg;
-	}
-	else{
-	 printf("Can't find the start of helicity quad !! \n");
-	}
-	return findpat;
+    UInt_t  pred_bit = 0;
+    int nquad = 0;
+    int nn = 0;
+    for(nn=quadstart; nn<maxbits;){         // initialize fgShreg
+	if(nquad<=30)pred_bit = ranBit(helbit[nn],1);   
+	if(nquad>=30 && (nn+4)<maxbits )pred_bit = ranBit(2,1);   
+	nquad++;
+	if(nquad>30 && (pred_bit != helbit[nn+4]) && (nn+4)<maxbits ){                  // check if helicity prediction is true
+ 	  printf("The prediction helicity does not match the real one !!\n");
+	  findpat=false;
+	  break;
+        }
+	  nn += 4;
+     }
+     //*helpos = 4-(nn-maxbits+1);
+
+     fgShreg_earlier = fgShreg;
+
+     return findpat;
 }
 
 

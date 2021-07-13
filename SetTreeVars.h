@@ -39,5 +39,5 @@ Int_t vtp_past_hel[6];                // last 173 helicity windows
 Int_t hel_win_cnt;                    // helicity window counts in past helicity 
 Int_t current_helicity;               // helicty after the delay is removed
 Int_t vtp_helicity;                   // the most recent helicity in vtp_past_hel[0] bit 0 (inverted)
-
+Int_t vtp_fadc_scalcnt[FADC_NCHAN];   // vtp helicity based scaler for FADC
 
