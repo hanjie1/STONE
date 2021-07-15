@@ -64,8 +64,8 @@ FADC250_NSA       44
 FADC250_MODE      1
 
 #       channel:      0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
-FADC250_ADC_MASK      1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0
-FADC250_TRG_MASK      1  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0
+FADC250_ADC_MASK      1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0
+FADC250_TRG_MASK      1  1  1  1  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_INVERT_MASK   0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_PLAYBACK_DISABLE_MASK   1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1
 # Set MPS (ch1) & helicity (ch2) & busy (ch4) to discriminator mode for trigger path
@@ -74,10 +74,11 @@ FADC250_TRG_MODE_MASK 0  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0
 # setting 0: only readout when TET is reached
 FADC250_TET_IGNORE_MASK 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0
 
+
 #       channel:     0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
 FADC250_DAC 3250
 #FADC250_ALLCH_TET  103  750  103  103  103  103  103  103  103  103  103  103  103  103  103  103
-FADC250_ALLCH_TET    500  2000  2000  103  103  103  103  103  103  103  103  103  103  103  103  103
+FADC250_ALLCH_TET   1000  2000  2000  500  103  103  103  103  103  103  103  103  103  103  103  103
 FADC250_ALLCH_PED    0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 FADC250_GAIN 1.0
 
