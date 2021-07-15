@@ -1,8 +1,7 @@
 #include "/home/daq/work/SOLID_DAQ/decoder/SetParams.h"
 #include "FindHelicity.h"
-#include "FindPulses.h"
 
-void CalcAsym_wscaler(){
+void CalcAsym_int(){
 
   TH1F *hplus = new TH1F("hplus","counts for plus helicity",100,620,720);
   TH1F *hminus = new TH1F("hminus","counts for minus helicity",100,620,720);
@@ -17,13 +16,11 @@ void CalcAsym_wscaler(){
 
   TH1F *hasym_diff = new TH1F("hasym_diff","asymmetry difference between scaler and fadc",500,-0.01,0.01);
 
-  int NPED[16]={1000,2000,2000,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  int width=30; 
+  int NPED[16]={180,190,190,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  int width=13; 
 
   const int nn_run=1;
-
-  //int runlist[18]={457,458,461,464,465,466,469,470,471,472,473,474,475,476,478,479,480,481};
-  int runlist[1]={480};
+  int runlist[1]={484};
 
   for(int nn=0; nn<nn_run; nn++){
 
@@ -39,12 +36,14 @@ void CalcAsym_wscaler(){
     T->AddFriend(VTP);
 
     Int_t fadc_scalcnt[FADC_NCHAN];
-    Int_t fadc_rawADC[FADC_NCHAN][MAXRAW];
+    Int_t fadc_a[FADC_NCHAN];
+    Int_t fadc_a1[FADC_NCHAN];
     Int_t past_hel[6]={0};
     Int_t vtp_hel=0, hel_win_cnt=0,hel_win_cnt_1=0;
     Int_t last_mps_time=0;
 
-    T->SetBranchAddress("fadc_rawADC",fadc_rawADC);
+    T->SetBranchAddress("fadc_a",fadc_a);
+    T->SetBranchAddress("fadc_a1",fadc_a1);
     T->SetBranchAddress("vtp_past_hel",past_hel);
     T->SetBranchAddress("vtp_helicity",&vtp_hel);
     T->SetBranchAddress("hel_win_cnt",&hel_win_cnt);
@@ -128,17 +127,17 @@ void CalcAsym_wscaler(){
 	   scaler_updated=false;
 	}
 
-        struct fadc_pulse pulses[3];
-        pulses[0]=FindPulses(fadc_rawADC[0],width,NPED[0]);   // channel 0: asymmetry signals
-        pulses[1]=FindPulses(fadc_rawADC[1],width,NPED[1]);   // channel 1: MPS signals
-        pulses[2]=FindPulses(fadc_rawADC[2],width,NPED[2]);   // channel 2: helicity signals 
+	int npulse=0;
+	if(fadc_a[0]>20000) npulse++;
+	if(fadc_a1[0]>3000){ npulse++; cout<<"Second pulses found in channel 1"<<endl;}
 
-	if(pulses[1].npulse==0 && last_mps_time>14000) Nhel = Nhel+pulses[0].npulse;
-	if(pulses[1].npulse==0 && last_mps_time<1000) pre_win_Nhel+=pulses[0].npulse;
+	if((fadc_a[1]<3000) && last_mps_time>16000) Nhel = Nhel+npulse;
 
-	if(pulses[1].npulse==0) fadc_cur_hel=pulses[2].npulse;
+	if((fadc_a[1]<3000) && last_mps_time<300) pre_win_Nhel+=npulse;
 
-	if(pulses[0].npulse>1 || pulses[2].npulse>1) cout<<"More than 1 pulses are found in one fadc window:  "<<pulses[0].npulse<<"  "<<pulses[1].npulse<<endl;
+	if(fadc_a[1]<3000 && fadc_a[2]<3000) fadc_cur_hel=0;
+	if(fadc_a[1]<3000 && fadc_a[2]>40000) fadc_cur_hel=1;
+
 	if(vtp_pre_win==hel_win_cnt_1){  // get scaler counts for the previous hel_win_cnt
 	   if(vtp_hel!=fadc_pre_hel) ndiff++;
 

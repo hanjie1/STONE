@@ -58,7 +58,7 @@ int main ()
   //Build TTree to store TDC data
   TTree *T = new TTree("T","data");
   T->Branch("evtype", &evtype, "evtype/I"); 
-  T->Branch("ti_timpestamp", &ti_timestamp, "ti_timestamp/l"); 
+  T->Branch("ti_timestamp", &ti_timestamp, "ti_timestamp/l"); 
   T->Branch("fadc_trigtime", &fadc_trigtime, "fadc_trigtime/l"); 
   T->Branch("fadc_mode", &fadc_mode, "fadc_mode/I"); 
   T->Branch("fadc_a", fadc_int, Form("fadc_int[%i]/I",FADC_NCHAN)); 
@@ -217,7 +217,10 @@ int main ()
       unsigned long long *simpTrigBuf1 = NULL;
       tbLen1 = simpleGetTriggerBankTimeSegment(&simpTrigBuf1);
       ULong64_t fevtNum = simpTrigBuf1[0];
-      if(fevtNum != nevents) printf("The event number %llu from TI does not match the counter %llu !\n",fevtNum,nevents);
+      if(fevtNum != nevents){
+	 printf("The event number %llu from TI does not match the counter %llu !\n",fevtNum,nevents);
+	 break;
+      }
 
       if(verbose)printf("Event number for the first event in the block = %llu \n",fevtNum);
 
@@ -270,7 +273,7 @@ int main ()
 		 totaldone = true;
 		 break;
 	  }
-          if(nevents%100000==0) printf("  Event number = %llu **\n",nevents);
+          if(nevents%1000000==0) printf("  Event number = %llu **\n",nevents);
          
 	  ti_timestamp = simpTrigBuf1[ii+1]; 
 	  evtype = simpTrigBuf2[ii];
