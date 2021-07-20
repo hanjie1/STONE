@@ -31,12 +31,12 @@
 
 #define BUFFERLEVEL 20
 #define BLOCKLEVEL 20
-//#define TIRANDOMPULSER  // using TI internal random pulser as trigger
+#define TIRANDOMPULSER  // using TI internal random pulser as trigger
 //#define TIFIXEDPULSER  // using TI internal fixed pulser as trigger
-//#define FADCPLAYBACK   // turn on fadc playback feature
+#define FADCPLAYBACK   // turn on fadc playback feature
 #define USE_VTP
-#define USE_HELBOARD
-#define USE_HAPTB
+//#define USE_HELBOARD
+//#define USE_HAPTB
 
 int haptb_ramp_value = 12000;
 
