@@ -14,4 +14,4 @@
 
 
 const int FADC_NCHAN=16;        // FADC maximum number of channels
-const int MAXRAW=48;	       // FADC raw mode maximum window width
+const int MAXRAW=66;	       // FADC raw mode maximum window width
