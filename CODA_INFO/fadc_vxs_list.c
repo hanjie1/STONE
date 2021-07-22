@@ -168,7 +168,20 @@ rocDownload()
      int nsamples = 32*16;  // for 16 channels
      unsigned short sdata[nsamples];
      int nchan,nsam;
-     for(nchan=0; nchan<16; nchan++){
+
+     for(nsam=0;nsam<32;nsam++){   // channel 0
+        if(nsam<4) sdata[nsam] = 160*nsam+100;
+        if(nsam>=4 && nsam<12) sdata[nsam] = 580-60*(nsam-3);
+        if(nsam>=12) sdata[nsam] = 100;
+     }
+
+     for(nsam=0;nsam<32;nsam++){   // channel 1
+        if(nsam<5) sdata[32+nsam] = 160*nsam+100;
+        if(nsam>=5 && nsam<15) sdata[32+nsam] = 740-64*(nsam-4);
+        if(nsam>=15) sdata[32+nsam] = 100;
+     }
+
+     for(nchan=2; nchan<16; nchan++){ // channel 2-15
         for(nsam=0;nsam<32;nsam++){
           if(nsam<4) sdata[nchan*32+nsam] = 160*nsam+100;
 	  if(nsam>=4 && nsam<12) sdata[nchan*32+nsam] = 580-60*(nsam-3);
