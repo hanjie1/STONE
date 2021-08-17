@@ -1,6 +1,7 @@
-#include "/home/daq/work/SOLID_DAQ/decoder/SetParams.h"
 #include "FindHelicity.h"
 #include "FindPulses.h"
+#define MAXRAW 48
+#define FADC_NCHAN 16
 
 void CalcAsym_wscaler(){
 
@@ -15,15 +16,24 @@ void CalcAsym_wscaler(){
   TH1F *hplus_dt = new TH1F("hplus_dt","plus helicity dead time",500,-0.01,0.01);
   TH1F *hminus_dt = new TH1F("hminus_dt","minus helicity dead time",500,-0.01,0.01);
 
-  TH1F *hasym_diff = new TH1F("hasym_diff","asymmetry difference between scaler and fadc",500,-0.01,0.01);
+  TH1F *hasym_diff = new TH1F("hasym_diff","(asym_fadc-asym_s)/asym_s",400,-5,10);
 
-  int NPED[16]={1000,2000,2000,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  TH2F *hfadc_asym_dt = new TH2F("hfadc_asym_dt","fadc asymmtry vs. dead time",200,0.,0.01,200,-0.001,0.002);
+  TH2F *hscal_asym_dt = new TH2F("hscal_asym_dt","scaler asymmtry vs. dead time",200,0.,0.01,200,-0.001,0.002);
+  //TH2F *hdiff_asym_dt = new TH2F("hdiff_asym_dt","diff/asym_s vs. dead time",200,0,0.01,200,-5,10);
+  TGraph *gdiff_asym_dt = new TGraph();
+  int nnp=0;
+
+
+  int NPED[16]={500,2000,2000,0,0,0,0,0,0,0,0,0,0,0,0,0};
   int width=30; 
 
-  const int nn_run=1;
+  const int nn_run=18;
 
-  //int runlist[18]={457,458,461,464,465,466,469,470,471,472,473,474,475,476,478,479,480,481};
-  int runlist[1]={480};
+  int runlist[18]={457,458,461,464,465,466,469,470,471,472,473,474,475,476,478,479,480,481};
+  //int runlist[nn_run]={457,458,461};
+
+  double max_diff=0;
 
   for(int nn=0; nn<nn_run; nn++){
 
@@ -114,6 +124,8 @@ void CalcAsym_wscaler(){
     int nnwin=0;
     bool scaler_updated=true;
     //int nmps=0;
+    //
+    //
     for(int ii=0; ii<nentries; ii++){
 	T->GetEntry(ii);
 
@@ -125,6 +137,7 @@ void CalcAsym_wscaler(){
 	   pre_win_Nhel=Nhel;
 	   Nhel=0;
 	   fadc_pre_hel=fadc_cur_hel;
+//cout<<fadc_cur_hel<<endl;
 	   scaler_updated=false;
 	}
 
@@ -136,7 +149,7 @@ void CalcAsym_wscaler(){
 	if(pulses[1].npulse==0 && last_mps_time>14000) Nhel = Nhel+pulses[0].npulse;
 	if(pulses[1].npulse==0 && last_mps_time<1000) pre_win_Nhel+=pulses[0].npulse;
 
-	if(pulses[1].npulse==0) fadc_cur_hel=pulses[2].npulse;
+	if(pulses[1].npulse==0) {fadc_cur_hel=pulses[2].npulse;}
 
 	if(pulses[0].npulse>1 || pulses[2].npulse>1) cout<<"More than 1 pulses are found in one fadc window:  "<<pulses[0].npulse<<"  "<<pulses[1].npulse<<endl;
 	if(vtp_pre_win==hel_win_cnt_1){  // get scaler counts for the previous hel_win_cnt
@@ -176,8 +189,17 @@ void CalcAsym_wscaler(){
              Double_t tmp_asym_s=1.0*(Nplus_quad_s-Nminus_quad_s)/(1.0*Nplus_quad_s+Nminus_quad_s);
 	     hasym_s->Fill(tmp_asym_s);
 
-	     Double_t asym_diff = (tmp_asym-tmp_asym_s);
+	     Double_t asym_diff = 0;
+	     if(tmp_asym!=0 && tmp_asym_s!=0)asym_diff=(tmp_asym-tmp_asym_s)/(tmp_asym_s+tmp_asym);
 	     hasym_diff->Fill(asym_diff);
+
+	     Double_t tmp_dt=1.0-1.0*(Nplus_quad+Nminus_quad)/(1.0*Nplus_quad_s+Nminus_quad_s);
+	     hfadc_asym_dt->Fill(tmp_dt,tmp_asym);
+	     hscal_asym_dt->Fill(tmp_dt,tmp_asym_s);
+	     //hdiff_asym_dt->Fill(tmp_dt,asym_diff);
+	     if(abs(asym_diff)>max_diff) max_diff=asym_diff;
+	     gdiff_asym_dt->SetPoint(nnp,tmp_dt,asym_diff);
+	     nnp++;
 //if(asym_diff>0.1) cout<<hel_win_cnt_1<<"  "<<asym_diff<<"  "<<Nplus_quad<<"  "<<Nminus_quad<<"  "<<Nplus_quad_s<<"  "<<Nminus_quad_s<<endl;
 
 	     nnwin=0; 
@@ -218,6 +240,18 @@ void CalcAsym_wscaler(){
     hasym_s->Draw();
     c2->cd(3);
     hasym_diff->Draw();
+
+    TCanvas *c3=new TCanvas("c3","c3",1500,1500);
+    c3->Divide(3,1);
+    c3->cd(1);
+    hfadc_asym_dt->Draw("COLZ");
+    c3->cd(2);
+    hscal_asym_dt->Draw("COLZ");
+    c3->cd(3);
+    gdiff_asym_dt->SetMarkerStyle(8);
+    gdiff_asym_dt->SetMarkerColor(1);
+    gdiff_asym_dt->Draw("AP");
       
     //cout<<"MPS:  "<<nmps<<endl; 
+    cout<<"max diff  "<<max_diff<<endl;
 }
