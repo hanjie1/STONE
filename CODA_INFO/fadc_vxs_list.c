@@ -134,7 +134,7 @@ rocDownload()
 
 #if defined(TIRANDOMPULSER) && defined(FADCPLAYBACK)
     /* Enable Random at rate 500kHz/(2^n) -- tiSetRandomTrigger(2,n)*/
-    tiSetRandomTrigger(2,0xa);  // playback trigger
+    tiSetRandomTrigger(2,0x5);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
     tiSetRandomTrigger(1,0x8);
 #endif
@@ -203,17 +203,17 @@ rocDownload()
      }
 
      for(nsam=0;nsam<32;nsam++){   // cluster 2
-        if(nsam<6) sdata[2][nsam+32*7] = 180*nsam+100;
-        if(nsam>=6 && nsam<15) sdata[2][nsam+32*7] = 1000-100*(nsam-5);
+        if(nsam<6) sdata[2][nsam+32*6] = 180*nsam+100;
+        if(nsam>=6 && nsam<15) sdata[2][nsam+32*6] = 1000-100*(nsam-5);
 
-        if(nsam<6) sdata[2][nsam+32*2] = 160*nsam+100;
-        if(nsam>=6 && nsam<11) sdata[2][nsam+32*2] = 900-160*(nsam-5);
+        if(nsam<6) sdata[2][nsam+32*1] = 160*nsam+100;
+        if(nsam>=6 && nsam<11) sdata[2][nsam+32*1] = 900-160*(nsam-5);
 
-        if(nsam<7) sdata[2][nsam+32*12] = 100*nsam+100;
-        if(nsam>=7 && nsam<15) sdata[2][nsam+32*12] = 700-75*(nsam-6);
+        if(nsam<7) sdata[2][nsam+32*11] = 100*nsam+100;
+        if(nsam>=7 && nsam<15) sdata[2][nsam+32*11] = 700-75*(nsam-6);
 
-        if(nsam<6) sdata[2][nsam+32*13] = 100*nsam+100;
-        if(nsam>=6 && nsam<11) sdata[2][nsam+32*13] = 600-100*(nsam-5);
+        if(nsam<6) sdata[2][nsam+32*12] = 100*nsam+100;
+        if(nsam>=6 && nsam<11) sdata[2][nsam+32*12] = 600-100*(nsam-5);
      }
 
      for(nsam=0;nsam<32;nsam++){   // cluster 3
@@ -240,11 +240,11 @@ rocDownload()
         if(nsam>=1 && nsam<=4) sdata[4][nsam+32*2] = 200*(nsam-1)+100;
         if(nsam>4 && nsam<=10) sdata[4][nsam+32*2] = 700-100*(nsam-4);
 
-        if(nsam>=1 && nsam<=7) sdata[4][nsam+32*6] = 150*(nsam-1)+100;
-        if(nsam>7 && nsam<=16) sdata[4][nsam+32*6] = 1000-100*(nsam-7);
+        if(nsam>=1 && nsam<=5) sdata[4][nsam+32*6] = 200*(nsam-1)+100;
+        if(nsam>5 && nsam<=13) sdata[4][nsam+32*6] = 900-100*(nsam-5);
 
-        if(nsam>=1 && nsam<=6) sdata[4][nsam+32*7] = 400*(nsam-1)+100;
-        if(nsam>6 && nsam<=16) sdata[4][nsam+32*7] = 2100-200*(nsam-6);
+        if(nsam>=1 && nsam<=6) sdata[4][nsam+32*7] = 180*(nsam-1)+100;
+        if(nsam>6 && nsam<=15) sdata[4][nsam+32*7] = 1000-100*(nsam-6);
 
         if(nsam>=3 && nsam<=10) sdata[4][nsam+32*8] = 100*(nsam-3)+100;
         if(nsam>10 && nsam<=17) sdata[4][nsam+32*8] = 800-100*(nsam-10);
@@ -476,6 +476,7 @@ rocTrigger(int arg)
 #ifdef TIRANDOMPULSER
   int PPG_status;
 
+  ntrigger=rand()%5;
   for(ifa=0; ifa<nfadc; ifa++){
    //faPPGDisable(faSlot(ifa));
    switch(ntrigger){
@@ -493,6 +494,7 @@ rocTrigger(int arg)
      break;
     case 4:
         PPG_status = faSetPPG(faSlot(ifa),0 , sdata[4], nsamples);
+        //PPG_status = faSetPPG(faSlot(ifa),0 , sdata[0], nsamples);
      break;
    }
 
@@ -501,8 +503,8 @@ rocTrigger(int arg)
    //faPPGEnable(faSlot(ifa));
   }
 
-  ntrigger = (ntrigger+1)%5;
-  printf("!! test: ntrigger=%d\n",ntrigger);
+  //ntrigger = (ntrigger+1)%5;
+  //printf("!! test: ntrigger=%d\n",ntrigger);
 
 #endif 
 
