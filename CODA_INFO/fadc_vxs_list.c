@@ -64,6 +64,9 @@ static unsigned int sdScanMask = 0;
 /* trigger counts to renew the tiSoftTrig */
 unsigned int ntrigger=0; 
 
+#define nsamples 32*16
+unsigned short sdata[5][nsamples];  // five clusters 
+
 /* function prototype */
 void rocTrigger(int arg);
 
@@ -131,7 +134,7 @@ rocDownload()
 
 #if defined(TIRANDOMPULSER) && defined(FADCPLAYBACK)
     /* Enable Random at rate 500kHz/(2^n) -- tiSetRandomTrigger(2,n)*/
-    tiSetRandomTrigger(2,0xa);  // playback trigger
+    tiSetRandomTrigger(2,0x5);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
     tiSetRandomTrigger(1,0x8);
 #endif
@@ -165,36 +168,102 @@ rocDownload()
 #ifdef FADCPLAYBACK
   /* Set FADC Playback */
   for(ifa=0; ifa<nfadc; ifa++){
-     int nsamples = 32*16;  // for 16 channels
-     unsigned short sdata[nsamples];
      int nchan,nsam;
 
-     for(nsam=0;nsam<32;nsam++){   // channel 0
-        if(nsam<4) sdata[nsam] = 160*nsam+100;
-        if(nsam>=4 && nsam<12) sdata[nsam] = 580-60*(nsam-3);
-        if(nsam>=12) sdata[nsam] = 100;
-     }
-
-     for(nsam=0;nsam<32;nsam++){   // channel 1
-        if(nsam<5) sdata[32+nsam] = 160*nsam+100;
-        if(nsam>=5 && nsam<15) sdata[32+nsam] = 740-64*(nsam-4);
-        if(nsam>=15) sdata[32+nsam] = 100;
-     }
-
-     for(nchan=2; nchan<16; nchan++){ // channel 2-15
+     for(nchan=0; nchan<16; nchan++){ // chan 0-15 initial pedestals
         for(nsam=0;nsam<32;nsam++){
-          if(nsam<4) sdata[nchan*32+nsam] = 160*nsam+100;
-	  if(nsam>=4 && nsam<12) sdata[nchan*32+nsam] = 580-60*(nsam-3);
-          if(nsam>=12) sdata[nchan*32+nsam] = 100;
+          sdata[0][nchan*32+nsam] = 100;
+          sdata[1][nchan*32+nsam] = 100;
+          sdata[2][nchan*32+nsam] = 100;
+          sdata[3][nchan*32+nsam] = 100;
+          sdata[4][nchan*32+nsam] = 100;
         }
+     }
+
+     for(nsam=0;nsam<32;nsam++){   // cluster 0
+        if(nsam<5) sdata[0][nsam] = 225*nsam+100;
+        if(nsam>=5 && nsam<15) sdata[0][nsam] = 1000-90*(nsam-4);
+
+        if(nsam<6) sdata[0][nsam+32*5] = 100*nsam+100;
+        if(nsam>=6 && nsam<11) sdata[0][nsam+32*5] = 600-100*(nsam-5);
+
+        if(nsam<7) sdata[0][nsam+32*6] = 50*nsam+100;
+        if(nsam>=7 && nsam<13) sdata[0][nsam+32*6] = 400-50*(nsam-6);
+     }
+
+     for(nsam=0;nsam<32;nsam++){   // cluster 1
+        if(nsam<4) sdata[1][nsam+32*9] = 300*nsam+100;
+        if(nsam>=4 && nsam<13) sdata[1][nsam+32*9] = 1000-100*(nsam-3);
+
+        if(nsam<6) sdata[1][nsam+32*14] = 100*nsam+100;
+        if(nsam>=6 && nsam<11) sdata[1][nsam+32*14] = 600-100*(nsam-5);
+
+        if(nsam<7) sdata[1][nsam+32*15] = 50*nsam+100;
+        if(nsam>=7 && nsam<13) sdata[1][nsam+32*15] = 400-50*(nsam-6);
+     }
+
+     for(nsam=0;nsam<32;nsam++){   // cluster 2
+        if(nsam<6) sdata[2][nsam+32*6] = 180*nsam+100;
+        if(nsam>=6 && nsam<15) sdata[2][nsam+32*6] = 1000-100*(nsam-5);
+
+        if(nsam<6) sdata[2][nsam+32*1] = 160*nsam+100;
+        if(nsam>=6 && nsam<11) sdata[2][nsam+32*1] = 900-160*(nsam-5);
+
+        if(nsam<7) sdata[2][nsam+32*11] = 100*nsam+100;
+        if(nsam>=7 && nsam<15) sdata[2][nsam+32*11] = 700-75*(nsam-6);
+
+        if(nsam<6) sdata[2][nsam+32*12] = 100*nsam+100;
+        if(nsam>=6 && nsam<11) sdata[2][nsam+32*12] = 600-100*(nsam-5);
+     }
+
+     for(nsam=0;nsam<32;nsam++){   // cluster 3
+        if(nsam>=20 && nsam<26) sdata[3][nsam+32*1] = 80*(nsam-20)+100;
+        if(nsam>=26 && nsam<31) sdata[3][nsam+32*1] = 500-80*(nsam-25);
+
+        if(nsam>=2 && nsam<=6) sdata[3][nsam+32*2] = 100*(nsam-2)+100;
+        if(nsam>6 && nsam<=10) sdata[3][nsam+32*2] = 500-100*(nsam-6);
+
+        if(nsam>=1 && nsam<=6) sdata[3][nsam+32*3] = 100*(nsam-1)+100;
+        if(nsam>6 && nsam<=11) sdata[3][nsam+32*3] = 600-100*(nsam-6);
+
+        if(nsam>=1 && nsam<=7) sdata[3][nsam+32*8] = 150*(nsam-1)+100;
+        if(nsam>7 && nsam<=13) sdata[3][nsam+32*8] = 1000-150*(nsam-7);
+
+        if(nsam>=2 && nsam<=7) sdata[3][nsam+32*13] = 100*(nsam-2)+100;
+        if(nsam>7 && nsam<=12) sdata[3][nsam+32*13] = 600-100*(nsam-7);
+     }
+
+     for(nsam=0;nsam<32;nsam++){   // cluster 4
+        if(nsam>=2 && nsam<=6) sdata[4][nsam+32*1] = 100*(nsam-2)+100;
+        if(nsam>6 && nsam<=10) sdata[4][nsam+32*1] = 500-100*(nsam-6);
+
+        if(nsam>=1 && nsam<=4) sdata[4][nsam+32*2] = 200*(nsam-1)+100;
+        if(nsam>4 && nsam<=10) sdata[4][nsam+32*2] = 700-100*(nsam-4);
+
+        if(nsam>=1 && nsam<=5) sdata[4][nsam+32*6] = 200*(nsam-1)+100;
+        if(nsam>5 && nsam<=13) sdata[4][nsam+32*6] = 900-100*(nsam-5);
+
+        if(nsam>=1 && nsam<=6) sdata[4][nsam+32*7] = 180*(nsam-1)+100;
+        if(nsam>6 && nsam<=15) sdata[4][nsam+32*7] = 1000-100*(nsam-6);
+
+        if(nsam>=3 && nsam<=10) sdata[4][nsam+32*8] = 100*(nsam-3)+100;
+        if(nsam>10 && nsam<=17) sdata[4][nsam+32*8] = 800-100*(nsam-10);
+
+        if(nsam>=2 && nsam<=6) sdata[4][nsam+32*12] = 200*(nsam-2)+100;
+        if(nsam>6 && nsam<=14) sdata[4][nsam+32*12] = 900-100*(nsam-6);
+
+        if(nsam>=2 && nsam<=6) sdata[4][nsam+32*13] = 100*(nsam-2)+100;
+        if(nsam>6 && nsam<=10) sdata[4][nsam+32*13] = 500-100*(nsam-6);
      }
 
      faPPGDisable(faSlot(ifa));
 
-     int PPG_status = faSetPPG(faSlot(ifa),0 , sdata, nsamples);
+     int PPG_status = faSetPPG(faSlot(ifa),0 , sdata[0], nsamples);
      if(PPG_status<0) printf("faSetPPG failed\n");
-     else printf("faSetPPG successfull\n");
+     else printf("faSetPPG initialize successfull\n");
+
    }
+
 #endif
 
   /* Just one FADC250 */
@@ -403,6 +472,41 @@ rocTrigger(int arg)
   ntrigger = ntrigger+1;
   //printf("trigger %d\n",ntrigger);
 #endif
+
+#ifdef TIRANDOMPULSER
+  int PPG_status;
+
+  ntrigger=rand()%5;
+  for(ifa=0; ifa<nfadc; ifa++){
+   //faPPGDisable(faSlot(ifa));
+   switch(ntrigger){
+    case 0:
+        PPG_status = faSetPPG(faSlot(ifa),0 , sdata[0], nsamples);
+     break;
+    case 1:
+        PPG_status = faSetPPG(faSlot(ifa),0 , sdata[1], nsamples);
+     break;
+    case 2:
+        PPG_status = faSetPPG(faSlot(ifa),0 , sdata[2], nsamples);
+     break;
+    case 3:
+        PPG_status = faSetPPG(faSlot(ifa),0 , sdata[3], nsamples);
+     break;
+    case 4:
+        PPG_status = faSetPPG(faSlot(ifa),0 , sdata[4], nsamples);
+        //PPG_status = faSetPPG(faSlot(ifa),0 , sdata[0], nsamples);
+     break;
+   }
+
+   if(PPG_status<0) printf("faSetPPG failed at trigger %d\n",ntrigger);
+
+   //faPPGEnable(faSlot(ifa));
+  }
+
+  //ntrigger = (ntrigger+1)%5;
+  //printf("!! test: ntrigger=%d\n",ntrigger);
+
+#endif 
 
   /* Setup Address and data modes for DMA transfers
    *
