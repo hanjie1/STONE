@@ -85,6 +85,11 @@ int main ()
   VTP->Branch("vtp_past_hel",vtp_past_hel,"vtp_past_hel[6]/I");
   VTP->Branch("vtp_helicity", &vtp_helicity, "vtp_helicity/I");
   VTP->Branch("vtp_fadc_scalcnt",vtp_fadc_scalcnt,Form("vtp_fadc_scalcnt[%d]/I",FADC_NCHAN));
+  VTP->Branch("clust_x",&clust_x,"clust_x/I");
+  VTP->Branch("clust_y",&clust_y,"clust_y/I");
+  VTP->Branch("clust_n",&clust_n,"clust_n/I");
+  VTP->Branch("clust_t",&clust_t,"clust_t/I");
+  VTP->Branch("clust_e",&clust_e,"clust_e/I");
 
 
 
@@ -440,5 +445,11 @@ void ClearTreeVar(){
  vtp_helicity = 0;
  memset(vtp_past_hel, 0, 6*sizeof(vtp_past_hel[0]));
  memset(vtp_fadc_scalcnt, 0, FADC_NCHAN*sizeof(vtp_fadc_scalcnt[0]));
+
+ clust_x=0;
+ clust_y=0;
+ clust_n=0;
+ clust_t=0;
+ clust_e=0;
 
 }
