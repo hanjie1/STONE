@@ -85,6 +85,11 @@ int main ()
   VTP->Branch("vtp_past_hel",vtp_past_hel,"vtp_past_hel[6]/I");
   VTP->Branch("vtp_helicity", &vtp_helicity, "vtp_helicity/I");
   VTP->Branch("vtp_fadc_scalcnt",vtp_fadc_scalcnt,Form("vtp_fadc_scalcnt[%d]/I",FADC_NCHAN));
+  VTP->Branch("clust_x",clust_x,Form("clust_x[%d]/I",NCLUST));
+  VTP->Branch("clust_y",clust_y,Form("clust_y[%d]/I",NCLUST));
+  VTP->Branch("clust_e",clust_e,Form("clust_e[%d]/I",NCLUST));
+  VTP->Branch("clust_n",clust_n,Form("clust_n[%d]/I",NCLUST));
+  VTP->Branch("clust_t",clust_t,Form("clust_t[%d]/I",NCLUST));
 
 
 
@@ -333,6 +338,14 @@ int main ()
              for(int mm=0;mm<6;mm++)
                 vtp_past_hel[mm] = vtp_data.helicity[mm];
 
+             for(int mm=0;mm<NCLUST;mm++){
+                clust_x[mm] = vtp_data.clust_x[mm];
+                clust_y[mm] = vtp_data.clust_y[mm];
+                clust_e[mm] = vtp_data.clust_e[mm];
+                clust_n[mm] = vtp_data.clust_n[mm];
+                clust_t[mm] = vtp_data.clust_t[mm];
+	     }
+
              //vtp_helicity = InvertBit((vtp_past_hel[0] & 0x1));   // most recent helicity seen by VTP
              vtp_helicity = (vtp_past_hel[0] & 0x1);   // most recent helicity seen by VTP
           }
@@ -440,5 +453,11 @@ void ClearTreeVar(){
  vtp_helicity = 0;
  memset(vtp_past_hel, 0, 6*sizeof(vtp_past_hel[0]));
  memset(vtp_fadc_scalcnt, 0, FADC_NCHAN*sizeof(vtp_fadc_scalcnt[0]));
+ memset(clust_x, 0, NCLUST*sizeof(clust_x[0]));
+ memset(clust_y, 0, NCLUST*sizeof(clust_y[0]));
+ memset(clust_e, 0, NCLUST*sizeof(clust_e[0]));
+ memset(clust_t, 0, NCLUST*sizeof(clust_t[0]));
+ memset(clust_n, 0, NCLUST*sizeof(clust_n[0]));
+
 
 }

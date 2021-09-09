@@ -24,19 +24,34 @@ struct vtp_data_struct
    unsigned int scal_cnt;      // scaler counts
    unsigned int trig_pat_time;     
    unsigned int trig_pat;
+   unsigned int clust_y[NCLUST];       // cluster y
+   unsigned int clust_x[NCLUST];       // cluster x
+   unsigned int clust_n[NCLUST];       // cluster n
+   unsigned int clust_t[NCLUST];       // cluster t
+   unsigned int clust_e[NCLUST];       // cluster e
 }vtp_data;
 
 int sub_type_8 = 0;
 int sub_type_9 = 0;
 int sub_type_10 = 0;
+int nclust=0;
 
 void ClearVTP(){
    for(int ii=0;ii<6;ii++){
 	vtp_data.helicity[ii] = 0;
    }
+
+   for(int ii=0;ii<NCLUST;ii++){
+	vtp_data.clust_x[ii] = 0;
+	vtp_data.clust_y[ii] = 0;
+	vtp_data.clust_e[ii] = 0;
+	vtp_data.clust_t[ii] = 0;
+	vtp_data.clust_n[ii] = 0;
+   }
     sub_type_8 = 0;
     sub_type_9 = 0;
     sub_type_10 = 0;
+    nclust=0;
 }
 
 void vtpDataDecode(unsigned int data){
@@ -181,7 +196,7 @@ void vtpDataDecode(unsigned int data){
 			 vtp_data.slot_id_strip = (data & 0x1f);
 			 if(i_print)
 				printf("%8X - VTP SCALER - HEADER - SLOT ID = %d\n",data,vtp_data.slot_id_strip);
-	      }
+	          }
 		  else{
 			 if(sub_type_10 < 129){
 				vtp_data.chan = (data >> 24) & 0x7f ;
@@ -196,6 +211,28 @@ void vtpDataDecode(unsigned int data){
 		  sub_type_10++;
 		  if(sub_type_10 > 129){
 			printf("VTP Warning: number of words in type 12.10 %d > 129\n",sub_type_10);
+		  }
+	     break;
+	   case 11:
+		  if(vtp_data.new_type){
+			 vtp_data.clust_e[nclust] = (data & 0xffff);
+			 if(i_print)
+				printf("%8X - VTP CLUSTER - HEADER\n",data);
+	          }
+		  else{
+			if(nclust<NCLUST){
+			 vtp_data.clust_y[nclust]=(data >> 19) & 0xf;			 
+			 vtp_data.clust_x[nclust]=(data >> 14) & 0x1f;			 
+			 vtp_data.clust_n[nclust]=(data >> 11) & 0x7;			 
+			 vtp_data.clust_t[nclust]=(data & 0x7ff);			 
+
+			 if(i_print)
+			    printf("%8X - VTP CLUST - (x, y, n, t, e) = (%d, %d, %d, %d, %d)\n", data, vtp_data.clust_x[nclust], vtp_data.clust_y[nclust], 
+				    vtp_data.clust_n[nclust], vtp_data.clust_t[nclust],vtp_data.clust_e[nclust]);
+			}
+			else printf("VTPDecoder warning: found %d cluster > %d\n",nclust+1,NCLUST);
+
+			nclust++;
 		  }
 	     break;
 

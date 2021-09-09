@@ -15,3 +15,4 @@
 
 const int FADC_NCHAN=16;        // FADC maximum number of channels
 const int MAXRAW=32;	       // FADC raw mode maximum window width
+const int NCLUST=10;	       // maximum number of clusters per trigger
