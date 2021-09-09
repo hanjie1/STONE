@@ -172,10 +172,14 @@ void SearchAndCheck(){
     c1->Divide(2,2);
     c1->cd(1);
     hxy->Draw("COLZ");
+    hxy->SetTitle("VTP cluster;clust.y;clust.x;");
     c1->cd(2);
     hxy_r->Draw("COLZ");
+    hxy_r->SetTitle("FADC cluster;clust.y;clust.x;");
     c1->cd(3);
     hny->Draw("COLZ");
+    hny->SetTitle("VTP cluster;clust.n;clust.y;");
     c1->cd(4);
     hny_r->Draw("COLZ");
+    hny_r->SetTitle("FADC cluster;clust.n;clust.y;");
 }
