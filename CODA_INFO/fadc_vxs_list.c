@@ -134,7 +134,7 @@ rocDownload()
 
 #if defined(TIRANDOMPULSER) && defined(FADCPLAYBACK)
     /* Enable Random at rate 500kHz/(2^n) -- tiSetRandomTrigger(2,n)*/
-    tiSetRandomTrigger(2,0x5);  // playback trigger
+    tiSetRandomTrigger(2,0x9);  // playback trigger
 #elif defined(TIRANDOMPULSER) && (!defined(FADCPLAYBACK))
     tiSetRandomTrigger(1,0x8);
 #endif
@@ -478,7 +478,7 @@ rocTrigger(int arg)
 
   ntrigger=rand()%5;
   for(ifa=0; ifa<nfadc; ifa++){
-   //faPPGDisable(faSlot(ifa));
+   faPPGDisable(faSlot(ifa));
    switch(ntrigger){
     case 0:
         PPG_status = faSetPPG(faSlot(ifa),0 , sdata[0], nsamples);
@@ -500,7 +500,7 @@ rocTrigger(int arg)
 
    if(PPG_status<0) printf("faSetPPG failed at trigger %d\n",ntrigger);
 
-   //faPPGEnable(faSlot(ifa));
+   faPPGEnable(faSlot(ifa));
   }
 
   //ntrigger = (ntrigger+1)%5;
