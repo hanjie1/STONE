@@ -51,7 +51,7 @@ int main ()
   cout<<"Which run? ";
   cin>>run_number;
   // Initialize root and output 
-  TString outfile=Form("Rootfiles/fadctest_%d.root",run_number);
+  TString outfile=Form("Rootfiles/fastreadout_%d.root",run_number);
 
   TFile *hfile = new TFile(outfile,"RECREATE","e detector data");
   //if(!hfile->IsOpen()) return;  
@@ -70,34 +70,20 @@ int main ()
   T->Branch("fadc_scal_rate", fadc_scal_rate, "fadc_scal_rate[16]/I"); 
   T->Branch("fadc_scal_time", &fadc_scal_time, "fadc_scal_time/I"); 
   T->Branch("fadc_scal_trigcnt", &fadc_scal_trigcnt, "fadc_scal_trigcnt/I"); 
-
+/*
   TTree *VTP = new TTree("VTP","vtp data");
   VTP->Branch("vtp_trigtime", &vtp_trigtime, "vtp_trigtime/l");
   VTP->Branch("busytime",&busytime,"busytime/I");
   VTP->Branch("livetime",&livetime,"livetime/I");
-  VTP->Branch("hel_win_cnt_1",&hel_win_cnt_1,"hel_win_cnt_1/I");
   VTP->Branch("trigcnt",trigcnt,"trigcnt[5]/I");
-  VTP->Branch("pattern_num",&pattern_num,"pattern_num/I");
   VTP->Branch("trig_pattern",trig_pattern,"trig_pattern[pattern_num]/I");
   VTP->Branch("trig_pattern_time",trig_pattern_time,"trig_pattern_time[pattern_num]/I");
-  VTP->Branch("last_mps_time",&last_mps_time,"last_mps_time/I");
-  VTP->Branch("hel_win_cnt",&hel_win_cnt,"hel_win_cnt/I");
-  VTP->Branch("vtp_past_hel",vtp_past_hel,"vtp_past_hel[6]/I");
-  VTP->Branch("vtp_helicity", &vtp_helicity, "vtp_helicity/I");
-  VTP->Branch("vtp_fadc_scalcnt",vtp_fadc_scalcnt,Form("vtp_fadc_scalcnt[%d]/I",FADC_NCHAN));
-  VTP->Branch("clust_x",clust_x,Form("clust_x[%d]/I",NCLUST));
-  VTP->Branch("clust_y",clust_y,Form("clust_y[%d]/I",NCLUST));
-  VTP->Branch("clust_e",clust_e,Form("clust_e[%d]/I",NCLUST));
-  VTP->Branch("clust_n",clust_n,Form("clust_n[%d]/I",NCLUST));
-  VTP->Branch("clust_t",clust_t,Form("clust_t[%d]/I",NCLUST));
-
-
-
+*/
   nevents=1;
   /* Open file  */
   while(ndatafile<20){ // loop all data files
   char datapath[100];
-  sprintf(datapath,"/home/daq/tmpdata/fadctest/fadc_test_%d.dat.%d",run_number,ndatafile);
+  sprintf(datapath,"/home/daq/tmpdata/fadctest/fadc_vtpreadout_%d.dat.%d",run_number,ndatafile);
 
   ifstream infile(datapath);
   if(!infile){
@@ -111,7 +97,7 @@ int main ()
     exit(-1);
   } 
   else
-	printf("Open file /home/daq/data/fadctest/fadc_test_%d.dat.%d\n",run_number,ndatafile);
+	printf("Open file /home/daq/data/fadctest/fadc_vtpreadout_%d.dat.%d\n",run_number,ndatafile);
 
   ndatafile++;
 
@@ -158,8 +144,11 @@ int main ()
    * @param isBlocked         no = 0, yes = 1
    * @param firstPassRoutine  Routine to call for first pass processing
    */
-  simpleConfigBank(1, 0x3, 0, 0, 1, NULL);
-  simpleConfigBank(3, 0x56, 0, 1, 1, NULL);
+  //simpleConfigBank(4, 0x3, 0, 0, 1, NULL);
+//  simpleConfigBank(4, 0x5, 0, 0, 1, NULL);
+  simpleConfigBank(5, 0x5, 0, 0, 1, NULL);
+//  simpleConfigSetDebug(0xffff);
+
 
   /* Loop through getting event blocks one at a time and print basic infomation
      about each block */
@@ -241,13 +230,14 @@ int main ()
       if(verbose)printf("time len = %d , type len = %d , roc1 len = %d , roc2 len = %d\n",tbLen1,tbLen2,tbLenROC[0],tbLenROC[1]);
 
       int BLOCKLEVEL=1;
-      check = simpleGetRocBlockLevel(TI_ROC, FADC_BANK, &BLOCKLEVEL);
+      check = simpleGetRocBlockLevel(VTP_ROC, FADC_BANK, &BLOCKLEVEL);
       blocklevel = BLOCKLEVEL;
       if(check == -1)printf("Couldn't find block level !\n");
       if(verbose)printf("Block level = %d\n",blocklevel);
 
       unsigned int header = 0;
       /** VTP block header **/
+/*
       check = simpleGetSlotBlockHeader(VTP_ROC, VTP_BANK, VTP_SLOT, &header);
       if(check <= 0)
          printf("ERROR getting VTP block header\n");
@@ -257,9 +247,9 @@ int main ()
          if(vtp_data.blk_size != blocklevel)
          printf("VTP block size %d is not equal to blocklevel %d !\n",vtp_data.blk_size, blocklevel);
       }
-
+*/
       /* FADC block header */
-      check = simpleGetSlotBlockHeader(TI_ROC, FADC_BANK, FADC_SLOT, &header);
+      check = simpleGetSlotBlockHeader(VTP_ROC, FADC_BANK, FADC_SLOT, &header);
       if(check <= 0) 
 	printf("ERROR getting FADC block header\n");
       else{
@@ -282,18 +272,11 @@ int main ()
          
 	  ti_timestamp = simpTrigBuf1[ii+1]; 
 	  evtype = simpTrigBuf2[ii];
-	  unsigned int tmpdata;
-	  tmpdata = simpTrigRocBuf1[ii*3+2];	  
-	  if((tmpdata & 0xffff0000)== 0xda560000){
-		tMPS = (tmpdata & 0x10)>>4;
-	  }
-	  else
-		printf("Couldn't find helicity bits !!\n");
 
           unsigned int *simpDataBuf = NULL;
 	  int simpLen=0;
 	  /** FADC event data **/
-          simpLen = simpleGetSlotEventData(TI_ROC, FADC_BANK, FADC_SLOT, ii, &simpDataBuf);
+          simpLen = simpleGetSlotEventData(VTP_ROC, FADC_BANK, FADC_SLOT, ii, &simpDataBuf);
 	  if(simpLen <= 0)
 		printf("ERROR fadc event data length %d <= 0 \n",simpLen);
           else{
@@ -324,6 +307,7 @@ int main ()
 	      }
 
             /**  VTP event data **/
+/*
           simpLen = 0;
           simpDataBuf = NULL;
           simpLen = simpleGetSlotEventData(VTP_ROC, VTP_BANK, VTP_SLOT, ii, &simpDataBuf);
@@ -349,9 +333,9 @@ int main ()
              //vtp_helicity = InvertBit((vtp_past_hel[0] & 0x1));   // most recent helicity seen by VTP
              vtp_helicity = (vtp_past_hel[0] & 0x1);   // most recent helicity seen by VTP
           }
-
+*/
           T->Fill();
- 	  VTP->Fill();
+// 	  VTP->Fill();
           nevents++;
 
 	  if(firstevent) firstevent = false;
@@ -397,7 +381,7 @@ int main ()
   }  // loop all data files
 
   T->Write(); 
-  VTP->Write(); 
+  //VTP->Write(); 
   hfile->Close(); 
  // evClose(handle);
 
@@ -439,7 +423,7 @@ void ClearTreeVar(){
  fadc_scal_update=0;
  memset(fadc_scal_rate, 0, 16*sizeof(fadc_scal_rate[0]));
 
- ClearVTP();  // clear some vtp_data 
+ //ClearVTP();  // clear some vtp_data 
  vtp_trigtime = 0;
  busytime = 0;
  livetime = 0;

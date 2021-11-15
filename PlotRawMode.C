@@ -11,13 +11,13 @@ void PlotRawMode(){
      cout<<"Which event to start?  ";
      cin>>nstart;
 
-     TString filename = Form("Rootfiles/fadctest_%d.root", runnumber); 
+     TString filename = Form("Rootfiles/fastreadout_%d.root", runnumber); 
 
      TFile *f0 = new TFile(filename);
      if(! (f0->IsOpen()) ) return;
      TTree *T = (TTree*) f0->Get("T");
 
-     TString outfile = Form("Rootfiles_rawmode/fadctest_mode1_%d.root", runnumber);
+     TString outfile = Form("Rootfiles_rawmode/fastreadout_mode1_%d.root", runnumber);
      TFile *f1 = new TFile(outfile,"RECREATE","fadc raw mode plots");
 
      int nsnap = 1;

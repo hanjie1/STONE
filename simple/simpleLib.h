@@ -25,7 +25,7 @@
  *----------------------------------------------------------------------------*/
 #define SIMPLE_MAX_MODULE_TYPES  4
 #define SIMPLE_MAX_BLOCKLEVEL   50
-#define SIMPLE_MAX_ROCS          5
+#define SIMPLE_MAX_ROCS          6
 #define SIMPLE_MAX_BANKS       100
 #define SIMPLE_MAX_SLOTS        20
 
