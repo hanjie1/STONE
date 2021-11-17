@@ -27,7 +27,7 @@
 #include "fadcLib.h"        /* library of FADC250 routines */
 #include "fadc250Config.h"
 #include "HelBoard.c"
-#include "timebrdLib.c"
+//#include "timebrdLib.c"
 
 #define BUFFERLEVEL 20
 #define BLOCKLEVEL 20
