@@ -145,9 +145,9 @@ int main ()
    * @param firstPassRoutine  Routine to call for first pass processing
    */
   //simpleConfigBank(4, 0x3, 0, 0, 1, NULL);
-//  simpleConfigBank(4, 0x5, 0, 0, 1, NULL);
+  simpleConfigBank(4, 0x5, 0, 0, 0, NULL);
   simpleConfigBank(5, 0x5, 0, 0, 1, NULL);
-//  simpleConfigSetDebug(0xffff);
+  //simpleConfigSetDebug(0xffff);
 
 
   /* Loop through getting event blocks one at a time and print basic infomation
@@ -202,7 +202,7 @@ int main ()
       simpleScan(buf, nWords);
 
       indx += 2;
-
+//printf("%d\n",nevents);
       /**  Get trigger bank buf **/
       int tbLen1 = 0; // trigger bank time segment
       int tbLen2 = 0; // trigger bank type segment
