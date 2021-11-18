@@ -249,13 +249,14 @@ rocPrestart()
 
         for(nchan=0; nchan<16; nchan++){ // chan 0-15 initial pedestals
           for(nsam=0;nsam<32;nsam++){
-            if(nsam<5) sdata[nchan*16+nsam] = 225*nsam+100;
+            if(nsam<5) sdata[nchan*32+nsam] = 225*nsam+100;
 	    else{
               if(nsam>=5 && nsam<15) 
-		sdata[nchan*16+nsam] = 1000-90*(nsam-4);
+		sdata[nchan*32+nsam] = 1000-90*(nsam-4);
 	      else
-		sdata[nchan*16+nsam]=100;
+		sdata[nchan*32+nsam]=100;
 	    } 
+	//    printf("sdata[%d]=%d\n",nchan*32+nsam,sdata[nchan*32+nsam]);
           }
         }
 
