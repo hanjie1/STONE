@@ -1,0 +1,19 @@
+VTP_CRATE all
+
+
+# Firmware files should be in /usr/local/src/vtp/firmware
+VTP_FIRMWARE_Z7           fe_vtp_vxs_readout_z7_jul28.bin
+VTP_FIRMWARE_V7           fe_vtp_vxs_readout_v7_aug8.bin
+
+#        slot: 10 13  9 14  8 15  7 16  6 17  5 18  4 19  3 20
+#     payload:  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+VTP_PAYLOAD_EN  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  0
+
+# ROC Parameters
+VTP_ROC_ROCID  5
+VTP_ROC_DEST_IP 0a0a0a01
+VTP_ROC_DEST_PORT  46100
+
+
+# Close the config file
+VTP_CRATE end
