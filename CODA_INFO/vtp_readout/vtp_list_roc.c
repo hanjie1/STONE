@@ -45,7 +45,7 @@ rocDownload()
   int stat;
   char buf[1000];
   /* Streaming firmware files for VTP */
-  const char *z7file="fe_vtp_vxs_readout_z7_jul28.bin";
+  const char *z7file="fe_vtp_vxs_readout_z7_nov5.bin";
   const char *v7file="fe_vtp_vxs_readout_v7_aug8.bin";
 
 

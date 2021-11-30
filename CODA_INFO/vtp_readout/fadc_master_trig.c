@@ -9,7 +9,8 @@
 
 /* Event Buffer definitions */
 #define MAX_EVENT_POOL     100
-#define MAX_EVENT_LENGTH   1152*32      /* Size in Bytes */
+//#define MAX_EVENT_LENGTH   1152*32      /* Size in Bytes */
+#define MAX_EVENT_LENGTH   1024*500      /* Size in Bytes */
 
 /* Define maximum number of words in the event block
    MUST be less than MAX_EVENT_LENGTH/4   */
@@ -38,7 +39,7 @@
 
 /* Define initial blocklevel and buffering level */
 #define BLOCKLEVEL  5
-#define BUFFERLEVEL 5
+#define BUFFERLEVEL 1
 #define SYNC_INTERVAL 100000
 
 /* FADC Library Variables */
@@ -113,7 +114,7 @@ rocDownload()
    */
   tiLoadTriggerTable(0);
 
-  tiSetTriggerHoldoff(1,10,0);
+  tiSetTriggerHoldoff(1,10,1);
   tiSetTriggerHoldoff(2,10,0);
 
   /* Set the sync delay width to 0x40*32 = 2.048us */
@@ -129,7 +130,9 @@ rocDownload()
   stat = sdInit(0);
   if(stat==0) 
     {
-      tiSetBusySource(TI_BUSY_SWB,1);
+    //  tiSetBusySource(TI_BUSY_SWB,1);
+      tiSetBusySource(TI_BUSY_LOOPBACK | TI_BUSY_SWB | TI_BUSY_SWA, 1);
+  //    tiBusyOnBufferLevel(0);
       sdSetActiveVmeSlots(0);
       sdStatus(0);
     }
@@ -144,6 +147,18 @@ rocDownload()
 #endif
 #endif
 
+
+  /* Example: How to start internal pulser trigger */
+#ifdef INTRANDOMPULSER
+  /* Enable Random at rate 500kHz/(2^7) = ~3.9kHz */
+  tiSetRandomTrigger(2,0x6);
+  //tiSetRandomTrigger(1,0x9);
+  tiSetTrig21Delay(0);
+#elif defined (INTFIXEDPULSER)
+  /* Enable fixed rate with period (ns) 120 +30*700*(1024^0) = 21.1 us (~47.4 kHz)
+     - Generated 1000 times */
+  tiSoftTrig(1,1000,700,0);
+#endif
 
   tiStatus(0);
 
@@ -241,7 +256,7 @@ rocPrestart()
 		    );
 
         /* set fadc scaler */    
-        int scaler_status = faSetScalerBlockInterval(faSlot(ifa),1); 
+        int scaler_status = faSetScalerBlockInterval(faSlot(ifa),1000); 
 	if(scaler_status<0) printf("faSetScalerBlockInterval failed\n");
 	else printf("faSetScalerBlockInterval successfull\n"); 
 
@@ -351,17 +366,6 @@ rocGo()
   faGEnable(0, 0);
 
 
-  /* Example: How to start internal pulser trigger */
-#ifdef INTRANDOMPULSER
-  /* Enable Random at rate 500kHz/(2^7) = ~3.9kHz */
-  tiSetRandomTrigger(2,0x9);
-  //tiSetRandomTrigger(1,0x9);
-  tiSetTrig21Delay(0);
-#elif defined (INTFIXEDPULSER)
-  /* Enable fixed rate with period (ns) 120 +30*700*(1024^0) = 21.1 us (~47.4 kHz)
-     - Generated 1000 times */
-  tiSoftTrig(1,1000,700,0);
-#endif
 }
 
 /****************************************
