@@ -7,10 +7,10 @@
  *                     This for a TI in Master Mode controlling multiple ROCs
  */
 
-/* Event Buffer definitions */
-#define MAX_EVENT_POOL     100
+/* Event Buffer definitions. Nominally the product of Pool*length should be no larger than 4MB*/
+#define MAX_EVENT_POOL     40
 //#define MAX_EVENT_LENGTH   1152*32      /* Size in Bytes */
-#define MAX_EVENT_LENGTH   1024*500      /* Size in Bytes */
+#define MAX_EVENT_LENGTH   1024*100
 
 /* Define maximum number of words in the event block
    MUST be less than MAX_EVENT_LENGTH/4   */
@@ -25,9 +25,10 @@
 
 /* Disable Streaming mode */
 #undef STREAMING_MODE
-/* Enable VXS Readout */
+/* Disable VXS Readout */
 #define FADC_VXS_READOUT
-#define INTRANDOMPULSER 
+/* Enable Random Pulser */
+#define INTRANDOMPULSER
 
 /* Measured longest fiber length in system */
 #define FIBER_LATENCY_OFFSET 0x4A  
@@ -38,9 +39,10 @@
 #include "sdLib.h"          /* VXS Signal Distribution board header */
 
 /* Define initial blocklevel and buffering level */
-#define BLOCKLEVEL  5
-#define BUFFERLEVEL 1
+#define BLOCKLEVEL  2
+#define BUFFERLEVEL 5
 #define SYNC_INTERVAL 100000
+//#define SYNC_INTERVAL  0
 
 /* FADC Library Variables */
 extern int fadcA32Base, nfadc;
@@ -57,14 +59,16 @@ extern int fadcA32Base, nfadc;
 //#define FADC_THRESHOLD  300
 #define FADC_THRESHOLD  101
 
-#define FADC_WINDOW_LAT    665
-#define FADC_WINDOW_WIDTH  32
-#define FADC_MODE           1   /* Hall B modes 1-8 are supported*/
+#define FADC_WINDOW_LAT    680
+#define FADC_WINDOW_WIDTH   32
+#define FADC_MODE            1   /* Hall B modes 1-8 are supported*/
 
 /* for the calculation of maximum data words in the block transfer */
 unsigned int MAXFADCWORDS=0;
-#define nsamples 32*16
-unsigned short sdata[nsamples];
+
+/* Trig2 pulse info */
+#define NSAMPLES 32*16
+unsigned short sdata[NSAMPLES];
 
 
 /****************************************
@@ -102,8 +106,10 @@ rocDownload()
    *      TI_TRIGGER_TSREV2    4  Ribbon cable from Legacy TS module
    *      TI_TRIGGER_PULSER    5  TI Internal Pulser (Fixed rate and/or random)
    */
-//  tiSetTriggerSource(TI_TRIGGER_TSINPUTS); /* TS Inputs enabled */
-  tiSetTriggerSourceMask(TI_TRIGSRC_PULSER | TI_TRIGSRC_LOOPBACK | TI_TRIGSRC_TRIG21); 
+  // tiSetTriggerSource(TI_TRIGGER_TSINPUTS); /* TS Inputs enabled */
+  //  tiSetTriggerSource(TI_TRIGGER_PULSER);
+  tiSetTriggerSourceMask(TI_TRIGSRC_PULSER | TI_TRIGSRC_LOOPBACK | TI_TRIGSRC_TRIG21);
+  
 
   /* Enable set specific TS input bits (1-6) */
   //tiEnableTSInput( TI_TSINPUT_1 | TI_TSINPUT_2 );
@@ -114,8 +120,11 @@ rocDownload()
    */
   tiLoadTriggerTable(0);
 
-  tiSetTriggerHoldoff(1,10,1);
-  tiSetTriggerHoldoff(2,10,0);
+  tiSetTriggerHoldoff(1,10,0);  /* 0 -> 16ns/increment 10 = 160ns */
+  tiSetTriggerHoldoff(2,0,0);  /* Disable */
+  //  tiSetTriggerHoldoffMin(2,10);
+  tiSetTriggerHoldoff(3,0,0);  /* Disable */
+  tiSetTriggerHoldoff(4,32,0);  /* 32 = 2048ns */
 
   /* Set the sync delay width to 0x40*32 = 2.048us */
   tiSetSyncDelayWidth(0x54, 0x40, 1);
@@ -130,9 +139,8 @@ rocDownload()
   stat = sdInit(0);
   if(stat==0) 
     {
-    //  tiSetBusySource(TI_BUSY_SWB,1);
-      tiSetBusySource(TI_BUSY_LOOPBACK | TI_BUSY_SWB | TI_BUSY_SWA, 1);
-  //    tiBusyOnBufferLevel(0);
+      //      tiSetBusySource(TI_BUSY_SWB,1);
+      tiSetBusySource(TI_BUSY_LOOPBACK | TI_BUSY_SWB, 1);
       sdSetActiveVmeSlots(0);
       sdStatus(0);
     }
@@ -148,10 +156,11 @@ rocDownload()
 #endif
 
 
-  /* Example: How to start internal pulser trigger */
+
+/* Example: How to start internal pulser trigger */
 #ifdef INTRANDOMPULSER
   /* Enable Random at rate 500kHz/(2^7) = ~3.9kHz */
-  tiSetRandomTrigger(2,0x6);
+  //  tiSetRandomTrigger(2,0x7);
   //tiSetRandomTrigger(1,0x9);
   tiSetTrig21Delay(0);
 #elif defined (INTFIXEDPULSER)
@@ -160,8 +169,9 @@ rocDownload()
   tiSoftTrig(1,1000,700,0);
 #endif
 
-  tiStatus(0);
 
+
+  tiStatus(0);
 
   printf("rocDownload: User Download Executed\n");
 
@@ -176,8 +186,8 @@ rocPrestart()
   unsigned short iflag;
   unsigned int fadcmask=0;
   unsigned int en_mask, ival = SYNC_INTERVAL;
-  int ifa, stat;
-  int islot;
+  int ifa, stat, scaler_status, PPG_status;
+  int islot, nchan, nsam;
 
 
   /* Unlock the VME Mutex */
@@ -255,35 +265,40 @@ rocPrestart()
 		    0   /* BANK */
 		    );
 
-        /* set fadc scaler */    
-        int scaler_status = faSetScalerBlockInterval(faSlot(ifa),1000); 
-	if(scaler_status<0) printf("faSetScalerBlockInterval failed\n");
-	else printf("faSetScalerBlockInterval successfull\n"); 
 
-        int nchan,nsam;
+  /* set fadc scaler */    
+      scaler_status = faSetScalerBlockInterval(faSlot(ifa),1000); 
+      if(scaler_status<0) 
+	printf("faSetScalerBlockInterval failed\n");
+      else 
+	printf("faSetScalerBlockInterval successfull\n"); 
+  
 
-        for(nchan=0; nchan<16; nchan++){ // chan 0-15 initial pedestals
-          for(nsam=0;nsam<32;nsam++){
-            if(nsam<5) sdata[nchan*32+nsam] = 225*nsam+100;
-	    else{
-              if(nsam>=5 && nsam<15) 
-		sdata[nchan*32+nsam] = 1000-90*(nsam-4);
-	      else
-		sdata[nchan*32+nsam]=100;
-	    } 
-	//    printf("sdata[%d]=%d\n",nchan*32+nsam,sdata[nchan*32+nsam]);
-          }
-        }
-
-        faPPGDisable(faSlot(ifa));
-
-        int PPG_status = faSetPPG(faSlot(ifa),0 , sdata, nsamples);
-        if(PPG_status<0) printf("faSetPPG failed\n");
-        else printf("faSetPPG initialize successfull\n");
-
-        faPPGEnable(faSlot(ifa)); 
-        faEnableScalers(faSlot(ifa)); 
-
+      /* setup Programmable pulse generator */
+      for(nchan=0; nchan<16; nchan++){ // chan 0-15 initial pedestals
+	for(nsam=0;nsam<32;nsam++){
+	  if(nsam<5) sdata[nchan*32+nsam] = 225*nsam+100;
+	  else{
+	    if(nsam>=5 && nsam<15) 
+	      sdata[nchan*32+nsam] = 1000-90*(nsam-4);
+	    else
+	      sdata[nchan*32+nsam]=100;
+	  } 
+	  //    printf("sdata[%d]=%d\n",nchan*32+nsam,sdata[nchan*32+nsam]);
+	}
+      }
+  
+      faPPGDisable(faSlot(ifa));
+      
+      PPG_status = faSetPPG(faSlot(ifa),0 , sdata, NSAMPLES);
+      if(PPG_status<0) 
+	printf("faSetPPG failed\n");
+      else 
+	printf("faSetPPG initialize successfull\n");
+      
+      faPPGEnable(faSlot(ifa)); 
+      faEnableScalers(faSlot(ifa)); 
+  
     }
 
   /* Print status for FADCS*/
@@ -366,7 +381,18 @@ rocGo()
   faGEnable(0, 0);
 
 
+  /* Example: How to start internal pulser trigger */
+#ifdef INTRANDOMPULSER
+  /* Enable Random at rate 500kHz/(2^7) = ~3.9kHz */
+  //  tiSetRandomTrigger(1,0x7);
+  tiSetRandomTrigger(2,0x6);  /* Trigger 2 art ~8kHz */
+#elif defined (INTFIXEDPULSER)
+  /* Enable fixed rate with period (ns) 120 +30*700*(1024^0) = 21.1 us (~47.4 kHz)
+     - Generated 1000 times */
+  tiSoftTrig(1,1000,700,0);
+#endif
 }
+
 
 /****************************************
  *  END
@@ -374,8 +400,7 @@ rocGo()
 void
 rocEnd()
 {
-  int islot;
-  int ifa;
+  int islot, ifa;
 
   /* Example: How to stop internal pulser trigger */
 #ifdef INTRANDOMPULSER
@@ -387,13 +412,19 @@ rocEnd()
 #endif
 
   /* FADC Disable */
+  faGDisable(0);
+
+
+ /* FADC Disable */
   for(ifa=0; ifa<nfadc; ifa++) 
       faPPGDisable(faSlot(ifa));
 
   for(ifa=0; ifa<nfadc; ifa++)
       faDisableScalers(faSlot(ifa));
 
-  faGDisable(0);
+
+
+
 
   /* FADC Event status - Is all data read out */
   faGStatus(0);
