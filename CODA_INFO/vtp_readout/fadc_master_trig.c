@@ -39,7 +39,7 @@
 #include "sdLib.h"          /* VXS Signal Distribution board header */
 
 /* Define initial blocklevel and buffering level */
-#define BLOCKLEVEL  2
+#define BLOCKLEVEL  15
 #define BUFFERLEVEL 5
 #define SYNC_INTERVAL 100000
 //#define SYNC_INTERVAL  0
@@ -57,7 +57,7 @@ extern int fadcA32Base, nfadc;
 
 /* Set a common FADC Threshhold for all channels */
 //#define FADC_THRESHOLD  300
-#define FADC_THRESHOLD  101
+#define FADC_THRESHOLD  110
 
 #define FADC_WINDOW_LAT    680
 #define FADC_WINDOW_WIDTH   32
@@ -385,7 +385,7 @@ rocGo()
 #ifdef INTRANDOMPULSER
   /* Enable Random at rate 500kHz/(2^7) = ~3.9kHz */
   //  tiSetRandomTrigger(1,0x7);
-  tiSetRandomTrigger(2,0x6);  /* Trigger 2 art ~8kHz */
+  tiSetRandomTrigger(2,0x3);  /* Trigger 2 art ~8kHz */
 #elif defined (INTFIXEDPULSER)
   /* Enable fixed rate with period (ns) 120 +30*700*(1024^0) = 21.1 us (~47.4 kHz)
      - Generated 1000 times */
