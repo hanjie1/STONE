@@ -52,6 +52,7 @@ int main ()
   cin>>run_number;
   // Initialize root and output 
   TString outfile=Form("Rootfiles/fadctest_%d.root",run_number);
+  //TString outfile=Form("Rootfiles/fadctest_roc2_%d.root",run_number);
 
   TFile *hfile = new TFile(outfile,"RECREATE","e detector data");
   //if(!hfile->IsOpen()) return;  
@@ -75,15 +76,10 @@ int main ()
   VTP->Branch("vtp_trigtime", &vtp_trigtime, "vtp_trigtime/l");
   VTP->Branch("busytime",&busytime,"busytime/I");
   VTP->Branch("livetime",&livetime,"livetime/I");
-  VTP->Branch("hel_win_cnt_1",&hel_win_cnt_1,"hel_win_cnt_1/I");
   VTP->Branch("trigcnt",trigcnt,"trigcnt[5]/I");
   VTP->Branch("pattern_num",&pattern_num,"pattern_num/I");
   VTP->Branch("trig_pattern",trig_pattern,"trig_pattern[pattern_num]/I");
   VTP->Branch("trig_pattern_time",trig_pattern_time,"trig_pattern_time[pattern_num]/I");
-  VTP->Branch("last_mps_time",&last_mps_time,"last_mps_time/I");
-  VTP->Branch("hel_win_cnt",&hel_win_cnt,"hel_win_cnt/I");
-  VTP->Branch("vtp_past_hel",vtp_past_hel,"vtp_past_hel[6]/I");
-  VTP->Branch("vtp_helicity", &vtp_helicity, "vtp_helicity/I");
   VTP->Branch("vtp_fadc_scalcnt",vtp_fadc_scalcnt,Form("vtp_fadc_scalcnt[%d]/I",FADC_NCHAN));
   VTP->Branch("clust_x",clust_x,Form("clust_x[%d]/I",NCLUST));
   VTP->Branch("clust_y",clust_y,Form("clust_y[%d]/I",NCLUST));
@@ -97,7 +93,7 @@ int main ()
   /* Open file  */
   while(ndatafile<20){ // loop all data files
   char datapath[100];
-  sprintf(datapath,"/home/daq/tmpdata/fadctest/fadc_test_%d.dat.%d",run_number,ndatafile);
+  sprintf(datapath,"/ssddata/a-compton/twocrate/twocrate_%d.dat.%d",run_number,ndatafile);
 
   ifstream infile(datapath);
   if(!infile){
@@ -111,7 +107,7 @@ int main ()
     exit(-1);
   } 
   else
-	printf("Open file /home/daq/data/fadctest/fadc_test_%d.dat.%d\n",run_number,ndatafile);
+	printf("Open file /ssddata/a-compton/twocrate/twocrate_%d.dat.%d\n",run_number,ndatafile);
 
   ndatafile++;
 
@@ -159,7 +155,11 @@ int main ()
    * @param firstPassRoutine  Routine to call for first pass processing
    */
   simpleConfigBank(1, 0x3, 0, 0, 1, NULL);
-  simpleConfigBank(3, 0x56, 0, 1, 1, NULL);
+  simpleConfigBank(2, 0x3, 0, 0, 1, NULL);
+  simpleConfigBank(5, 0x56, 0, 1, 1, NULL);
+  simpleConfigBank(6, 0x56, 0, 1, 1, NULL);
+
+  //simpleConfigSetDebug(0xffff);
 
   /* Loop through getting event blocks one at a time and print basic infomation
      about each block */
@@ -287,8 +287,8 @@ int main ()
 	  if((tmpdata & 0xffff0000)== 0xda560000){
 		tMPS = (tmpdata & 0x10)>>4;
 	  }
-	  else
-		printf("Couldn't find helicity bits !!\n");
+//	  else
+//		printf("Couldn't find helicity bits !!\n");
 
           unsigned int *simpDataBuf = NULL;
 	  int simpLen=0;
@@ -302,8 +302,9 @@ int main ()
 
 	           if(firstevent){
 		      fadc_mode = GetFadcMode();
-	   	      if(fadc_mode == RAW_MODE)
                          T->Branch("fadc_rawADC", frawdata, Form("frawdata[%i][%i]/I",FADC_NCHAN,MAXRAW)); 
+	   	      //if(fadc_mode == RAW_MODE)
+                        // T->Branch("fadc_rawADC", frawdata, Form("frawdata[%i][%i]/I",FADC_NCHAN,MAXRAW)); 
 
 		      fadc_scal_pretime=0;
 		      for(int kk=0; kk<16; kk++) fadc_scal_precnt[kk]=0;
